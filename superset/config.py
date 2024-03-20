@@ -286,7 +286,7 @@ AUTH_RATE_LIMIT = "5 per second"
 APP_NAME = "Superset"
 
 # Specify the App icon
-APP_ICON = "/static/assets/images/superset-logo-horiz.png"
+APP_ICON = "/static/assets/images/tamra_logo.svg"
 
 # Specify where clicking the logo would take the user
 # e.g. setting it to '/' would take the user to '/superset/welcome/'
