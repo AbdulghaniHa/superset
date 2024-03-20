@@ -64,7 +64,7 @@ const reduxState = {
   user: {
     userId: 1,
   },
-  common: { conf: { SUPERSET_WEBSERVER_TIMEOUT: 60 } },
+  common: { conf: { SUPERSET_WEBSERVER_TIMEOUT: 600 } },
   datasources: {
     '1__table': {
       id: 1,
