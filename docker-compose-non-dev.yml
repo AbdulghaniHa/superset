@@ -28,6 +28,7 @@ x-superset-volumes:
   &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
   - ./docker:/app/docker
   - superset_home:/app/superset_home
+  # - ./superset/config.py:/app/superset/config.py
 
 x-common-build: &common-build
   context: .
@@ -65,7 +66,7 @@ services:
     build:
       <<: *common-build
     container_name: superset_app
-    command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
+    command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn", "-t", "300"]
     user: "root"
     restart: unless-stopped
     ports:
@@ -74,6 +75,7 @@ services:
       superset-init:
         condition: service_completed_successfully
     volumes: *superset-volumes
+
 
   superset-init:
     container_name: superset_init

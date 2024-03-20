@@ -185,7 +185,7 @@ DEFAULT_TIME_FILTER = NO_TIME_RANGE
 # [load balancer / proxy / envoy / kong / ...] timeout settings.
 # You should also make sure to configure your WSGI server
 # (gunicorn, nginx, apache, ...) timeout setting to be <= to this setting
-SUPERSET_WEBSERVER_TIMEOUT = int(timedelta(minutes=1).total_seconds())
+SUPERSET_WEBSERVER_TIMEOUT = int(timedelta(minutes=10).total_seconds())
 
 # this 2 settings are used by dashboard period force refresh feature
 # When user choose auto force refresh frequency
@@ -1193,7 +1193,14 @@ HTTP_HEADERS: dict[str, Any] = {}
 DEFAULT_DB_ID = None
 
 # Timeout duration for SQL Lab synchronous queries
-SQLLAB_TIMEOUT = int(timedelta(seconds=30).total_seconds())
+SQLLAB_TIMEOUT = int(timedelta(seconds=600).total_seconds())
+
+# Expermental
+SQLALCHEMY_POOL_SIZE = 45
+SQLALCHEMY_MAX_OVERFLOW = 30
+SQLALCHEMY_POOL_TIMEOUT = 600
+
+
 
 # Timeout duration for SQL Lab query validation
 SQLLAB_VALIDATION_TIMEOUT = int(timedelta(seconds=10).total_seconds())
@@ -1811,7 +1818,7 @@ DATABASE_OAUTH2_JWT_ALGORITHM = "HS256"
 DATABASE_OAUTH2_TIMEOUT = timedelta(seconds=30)
 
 # Enable/disable CSP warning
-CONTENT_SECURITY_POLICY_WARNING = True
+CONTENT_SECURITY_POLICY_WARNING = False #True
 
 # Do you want Talisman enabled?
 TALISMAN_ENABLED = utils.cast_to_boolean(os.environ.get("TALISMAN_ENABLED", True))
