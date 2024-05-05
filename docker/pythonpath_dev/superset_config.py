@@ -94,6 +94,7 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
+print("Version: 1.0.0")
 FEATURE_FLAGS = {
     "ALERT_REPORTS": True,
     "ENABLE_TEMPLATE_PROCESSING": True,
