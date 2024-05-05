@@ -34,6 +34,9 @@ import RoseChartPlugin from '@superset-ui/legacy-plugin-chart-rose';
 import TableChartPlugin from '@superset-ui/plugin-chart-table';
 import { WordCloudChartPlugin } from '@superset-ui/plugin-chart-word-cloud';
 import WorldMapChartPlugin from '@superset-ui/legacy-plugin-chart-world-map';
+
+import CustomChartV1 from '@superset-ui/plugin-custom-chart-v1';
+
 import {
   BubbleChartPlugin,
   BulletChartPlugin,
@@ -82,6 +85,8 @@ import { HandlebarsChartPlugin } from '@superset-ui/plugin-chart-handlebars';
 import { FilterPlugins } from 'src/constants';
 import AgGridTableChartPlugin from '@superset-ui/plugin-chart-ag-grid-table';
 import TimeTableChartPlugin from '../TimeTable';
+
+
 
 export default class MainPreset extends Preset {
   constructor() {
