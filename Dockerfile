@@ -47,6 +47,14 @@ COPY ./superset-frontend ./
 # This seems to be the most expensive step
 RUN npm run ${BUILD_CMD}
 
+
+# Custom chart config
+COPY ./superset-frontend ./superset-frontend
+COPY plugins/plugin-custom-chart-v1 /app/superset/superset-frontend/src/plugins/plugin-custom-chart-v1
+
+RUN cd /app/superset/superset-frontend/src/plugins/plugin-custom-chart-v1 && npm install
+RUN cd /app/superset/superset-frontend && npm run build
+
 ######################################################################
 # Final lean image...
 ######################################################################
