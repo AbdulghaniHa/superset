@@ -103,7 +103,8 @@ CELERY_CONFIG = CeleryConfig
 
 FEATURE_FLAGS = {
     "ALERT_REPORTS": True,
-    "ENABLE_TEMPLATE_PROCESSING": True
+    "ENABLE_TEMPLATE_PROCESSING": True,
+    "DASHBOARD_RBAC": True
 }
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
 WEBDRIVER_BASEURL = f"http://superset_app{os.environ.get('SUPERSET_APP_ROOT', '/')}/"  # When using docker compose baseurl should be http://superset_nginx{ENV{BASEPATH}}/  # noqa: E501
