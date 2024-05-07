@@ -207,6 +207,8 @@ export const useExploreAdditionalActionsMenu = (
     [canDownloadCSV, latestQueryFormData],
   );
 
+  console.log("latestQueryFormData:", latestQueryFormData)
+
   const exportExcel = useCallback(
     () =>
       canDownloadCSV
