@@ -184,12 +184,14 @@ export const useExploreAdditionalActionsMenu = (
   console.log("latestQueryFormData:", latestQueryFormData)
 
   const exportExcel = useCallback(
-    () =>
+    () => {
+      console.log('Exporting chart with the following form data:', latestQueryFormData);
       exportChart({
         formData: latestQueryFormData,
         resultType: 'results',
         resultFormat: 'xlsx',
-      }),
+      });
+    },
     [latestQueryFormData],
   );
 
@@ -243,6 +245,7 @@ export const useExploreAdditionalActionsMenu = (
           );
           break;
         case MENU_KEYS.EXPORT_TO_XLSX:
+          console.log("debug 2")
           exportExcel();
           setIsDropdownVisible(false);
           dispatch(
