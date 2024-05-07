@@ -181,6 +181,8 @@ export const useExploreAdditionalActionsMenu = (
     [latestQueryFormData],
   );
 
+  console.log("latestQueryFormData:", latestQueryFormData)
+
   const exportExcel = useCallback(
     () =>
       exportChart({
