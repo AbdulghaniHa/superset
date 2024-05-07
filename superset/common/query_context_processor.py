@@ -571,6 +571,18 @@ class QueryContextProcessor:
                     df, index=include_index, **config["CSV_EXPORT"]
                 )
             elif self._query_context.result_format == ChartDataResultFormat.XLSX:
+                # You might need to import datetime and define exporter_name somewhere in your code.
+                from datetime import datetime
+                exporter_name = "Your Exporter Name"  # This could be dynamically set as needed
+                export_date = datetime.now().strftime('%Y-%m-%d')
+
+                # Insert a header row with custom information
+                header_df = pd.DataFrame({
+                    'A': [f'Exported by: {exporter_name}', f'Export date: {export_date}'],
+                    'B': ['', '']  # Add as many columns as you need to fill the header properly
+                })
+                df = pd.concat([header_df, df], ignore_index=True)
+
                 result = excel.df_to_excel(df, **config["EXCEL_EXPORT"])
             return result or ""
 
