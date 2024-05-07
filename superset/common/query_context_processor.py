@@ -576,11 +576,13 @@ class QueryContextProcessor:
                 exporter_name = "Your Exporter Name"  # This could be dynamically set as needed
                 export_date = datetime.now().strftime('%Y-%m-%d')
 
+                print("debug 1")
                 # Insert a header row with custom information
                 header_df = pd.DataFrame({
                     'D': [f'Exported by: {exporter_name}', f'Export date: {export_date}'],
                     'C': ['', '']  # Add as many columns as you need to fill the header properly
                 })
+                print(header_df)
                 df = pd.concat([header_df, df], ignore_index=True)
 
                 result = excel.df_to_excel(df, **config["EXCEL_EXPORT"])
