@@ -578,8 +578,8 @@ class QueryContextProcessor:
 
                 # Insert a header row with custom information
                 header_df = pd.DataFrame({
-                    'A': [f'Exported by: {exporter_name}', f'Export date: {export_date}'],
-                    'B': ['', '']  # Add as many columns as you need to fill the header properly
+                    'D': [f'Exported by: {exporter_name}', f'Export date: {export_date}'],
+                    'C': ['', '']  # Add as many columns as you need to fill the header properly
                 })
                 df = pd.concat([header_df, df], ignore_index=True)
 
