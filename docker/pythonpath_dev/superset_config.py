@@ -94,6 +94,16 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
+# smtp server configuration
+EMAIL_NOTIFICATIONS = True  # all the emails are sent using dryrun
+SMTP_HOST = os.getenv("SMTP_HOST")
+SMTP_STARTTLS = True
+SMTP_SSL = False
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PORT = os.getenv("SMTP_PORT")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_MAIL_FROM = os.getenv("SMTP_MAIL_FROM")
+
 print("Version: 1.0.0")
 FEATURE_FLAGS = {
     "ALERT_REPORTS": True,
