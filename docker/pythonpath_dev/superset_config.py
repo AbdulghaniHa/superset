@@ -104,7 +104,7 @@ SMTP_PORT = os.getenv("SMTP_PORT")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_MAIL_FROM = os.getenv("SMTP_MAIL_FROM")
 
-print("Version: 1.0.0")
+print("Version: 1.0.1")
 FEATURE_FLAGS = {
     "ALERT_REPORTS": True,
     "ENABLE_TEMPLATE_PROCESSING": True,
