@@ -114,7 +114,7 @@ SQLALCHEMY_ENGINE_OPTIONS = {
     "pool_size": 30,
 }
 
-print("Version: 1.0.1")
+print("Version: 1.0.2")
 FEATURE_FLAGS = {
     "ALERT_REPORTS": True,
     "ENABLE_TEMPLATE_PROCESSING": True,

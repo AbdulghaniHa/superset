@@ -21,8 +21,8 @@ x-superset-depends-on: &superset-depends-on
 x-superset-volumes:
   &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
   - ./docker:/app/docker
+  - ./docker/pythonpath_dev/superset_config.py:/app/pythonpath/superset_config.py
   - superset_home:/app/superset_home
-  # - ./superset/config.py:/app/superset/config.py
 
 version: "3.7"
 services:
@@ -42,6 +42,21 @@ services:
       - db_home:/var/lib/postgresql/data
       - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
 
+
+  # superset-frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-frontend  # Your new frontend-specific Dockerfile
+  #   container_name: superset_frontend
+  #   ports:
+  #     - "3000:8080"  # Map port 3000 on the host to port 8080 in the container
+  #   volumes:
+  #     - ./superset-frontend/src:/usr/src/app/src  # For live reload during development
+  #     - ./superset-frontend/public:/usr/src/app/public
+  #   environment:
+  #     - NODE_ENV=development  # Set environment to development for live reloading, etc.
+  #     # - NPM_CONFIG_CACHE=/tmp/npm-cache
+
   superset:
     env_file: docker/.env-non-dev
     image: *superset-image
@@ -53,7 +68,6 @@ services:
       - 8088:8088
     depends_on: *superset-depends-on
     volumes: *superset-volumes
-
 
   superset-init:
     image: *superset-image
