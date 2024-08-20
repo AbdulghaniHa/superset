@@ -107,6 +107,12 @@ SMTP_MAIL_FROM = os.getenv("SMTP_MAIL_FROM")
 SQLALCHEMY_POOL_SIZE = 60
 SQLALCHEMY_MAX_OVERFLOW = 30
 SQLALCHEMY_POOL_TIMEOUT = 600
+SQLALCHEMY_ENGINE_OPTIONS = {
+    "max_overflow": 15,
+    "pool_pre_ping": True,
+    "pool_recycle": 60 * 60,
+    "pool_size": 30,
+}
 
 print("Version: 1.0.1")
 FEATURE_FLAGS = {
