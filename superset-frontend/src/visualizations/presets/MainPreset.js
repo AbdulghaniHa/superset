@@ -35,8 +35,6 @@ import TableChartPlugin from '@superset-ui/plugin-chart-table';
 import { WordCloudChartPlugin } from '@superset-ui/plugin-chart-word-cloud';
 import WorldMapChartPlugin from '@superset-ui/legacy-plugin-chart-world-map';
 
-import CustomChartV1 from '@superset-ui/plugin-custom-chart-v1';
-
 import {
   BubbleChartPlugin,
   BulletChartPlugin,
