@@ -102,6 +102,11 @@ export const DashboardPage: FC<PageProps> = ({ idOrSlug }: PageProps) => {
   const { dashboard_title, css, metadata, id = 0 } = dashboard || {};
 
   useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('changes v.0.1');
+  }, []);
+
+  useEffect(() => {
     // mark tab id as redundant when user closes browser tab - a new id will be
     // generated next time user opens a dashboard and the old one won't be reused
     const handleTabClose = () => {
