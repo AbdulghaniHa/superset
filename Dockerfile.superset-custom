@@ -1,0 +1,7 @@
+FROM apachesuperset.docker.scarf.sh/apache/superset:latest
+
+USER root
+
+RUN pip install --no-cache-dir clickhouse-connect clickhouse-sqlalchemy
+
+USER superset

@@ -22,7 +22,6 @@ x-superset-volumes:
   &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
   - ./docker:/app/docker
   - ./docker/pythonpath_dev/superset_config.py:/app/pythonpath/superset_config.py
-  - ./docker/requirements-local.txt:/app/docker/requirements-local.txt
   - ./pythonpath/certs:/app/pythonpath/certs
   - superset_home:/app/superset_home
 
@@ -61,7 +60,10 @@ services:
 
   superset:
     env_file: docker/.env-non-dev
-    image: *superset-image
+    build:
+      context: .
+      dockerfile: Dockerfile.superset-custom
+    image: superset-custom:latest
     container_name: superset_app
     command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn", "-t", "300"]
     user: "root"
