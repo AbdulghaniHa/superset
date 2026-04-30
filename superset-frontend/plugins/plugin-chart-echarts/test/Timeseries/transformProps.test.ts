@@ -552,6 +552,43 @@ describe('Does transformProps transform series correctly', () => {
     });
   });
 
+  it('should include stacked total in tooltip when onlyTotal is true', () => {
+    const updatedChartPropsConfig = {
+      ...chartPropsConfig,
+      formData: { ...formData, onlyTotal: true },
+    };
+
+    const chartProps = new ChartProps(updatedChartPropsConfig);
+    const { echartOptions } = transformProps(
+      chartProps as EchartsTimeseriesChartProps,
+    );
+    const formatter = (echartOptions.tooltip as any).formatter;
+    const tooltip = formatter([
+      {
+        dataIndex: 0,
+        marker: '',
+        seriesId: 'San Francisco',
+        value: [599616000000, 1],
+      },
+      {
+        dataIndex: 0,
+        marker: '',
+        seriesId: 'New York',
+        value: [599616000000, 2],
+      },
+      {
+        dataIndex: 0,
+        marker: '',
+        seriesId: 'Boston',
+        value: [599616000000, 1],
+      },
+    ]);
+
+    expect(tooltip).toContain(
+      '<span style="font-weight: 700">Total: 4</span>',
+    );
+  });
+
   it('should show labels on values >= percentageThreshold if onlyTotal is false', () => {
     const chartProps = new ChartProps(chartPropsConfig);
 

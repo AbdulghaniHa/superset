@@ -553,6 +553,23 @@ export default function transformProps(
         if (stack) {
           rows.reverse();
         }
+        const dataIndex = richTooltip ? params[0]?.dataIndex : params.dataIndex;
+        if (
+          stack &&
+          showValue &&
+          onlyTotal &&
+          isDefined(dataIndex) &&
+          isDefined(sortedTotalValues[dataIndex])
+        ) {
+          const totalFormatter = forcePercentFormatter
+            ? percentFormatter
+            : defaultFormatter;
+          rows.push(
+            `<span style="font-weight: 700">${t('Total')}: ${totalFormatter(
+              isAreaExpand ? 1 : sortedTotalValues[dataIndex],
+            )}</span>`,
+          );
+        }
         rows.unshift(`${tooltipFormatter(xValue)}`);
         return rows.join('<br />');
       },
