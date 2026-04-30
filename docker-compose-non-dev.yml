@@ -23,6 +23,7 @@ x-superset-volumes:
   - ./docker:/app/docker
   - ./docker/pythonpath_dev/superset_config.py:/app/pythonpath/superset_config.py
   - ./pythonpath/certs:/app/pythonpath/certs
+  - ./superset/static/assets:/app/superset/static/assets
   - superset_home:/app/superset_home
 
 version: "3.7"
