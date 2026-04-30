@@ -74,7 +74,10 @@ services:
     volumes: *superset-volumes
 
   superset-init:
-    image: *superset-image
+    build:
+      context: .
+      dockerfile: Dockerfile.superset-custom
+    image: superset-custom:latest
     container_name: superset_init
     command: ["/app/docker/docker-init.sh"]
     env_file: docker/.env-non-dev
@@ -85,7 +88,10 @@ services:
       disable: true
 
   superset-worker:
-    image: *superset-image
+    build:
+      context: .
+      dockerfile: Dockerfile.superset-custom
+    image: superset-custom:latest
     container_name: superset_worker
     command: ["/app/docker/docker-bootstrap.sh", "worker"]
     env_file: docker/.env-non-dev
@@ -101,7 +107,10 @@ services:
         ]
 
   superset-worker-beat:
-    image: *superset-image
+    build:
+      context: .
+      dockerfile: Dockerfile.superset-custom
+    image: superset-custom:latest
     container_name: superset_worker_beat
     command: ["/app/docker/docker-bootstrap.sh", "beat"]
     env_file: docker/.env-non-dev
