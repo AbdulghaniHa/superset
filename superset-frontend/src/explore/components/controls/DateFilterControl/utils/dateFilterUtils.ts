@@ -44,7 +44,7 @@ export const formatTimeRange = (
   return `${formatDateEndpoint(
     splitDateRange[0],
     true,
-  )} ≤ ${columnPlaceholder} < ${formatDateEndpoint(splitDateRange[1])}`;
+  )} ≤ ${columnPlaceholder} ≤ ${formatDateEndpoint(splitDateRange[1])}`;
 };
 
 export const guessFrame = (timeRange: string): FrameType => {

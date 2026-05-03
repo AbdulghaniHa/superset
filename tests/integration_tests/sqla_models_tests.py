@@ -693,7 +693,7 @@ def test_filter_on_text_column(text_column_table):
 
 
 @only_postgresql
-def test_should_generate_closed_and_open_time_filter_range(login_as_admin):
+def test_should_generate_closed_time_filter_range(login_as_admin):
     table = SqlaTable(
         table_name="temporal_column_table",
         sql=(
@@ -731,9 +731,9 @@ def test_should_generate_closed_and_open_time_filter_range(login_as_admin):
                UNION SELECT '2023-01-01'::timestamp
                UNION SELECT '2023-03-10'::timestamp) AS virtual_table
             WHERE datetime_col >= TO_TIMESTAMP('2022-01-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')
-              AND datetime_col < TO_TIMESTAMP('2023-01-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')
+              AND datetime_col <= TO_TIMESTAMP('2023-01-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')
     """
-    assert result_object.df.iloc[0]["count"] == 2
+    assert result_object.df.iloc[0]["count"] == 3
 
 
 def test_none_operand_in_filter(login_as_admin, physical_dataset):

@@ -1333,7 +1333,7 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
         if end_dttm:
             l.append(
                 col
-                < self.db_engine_spec.get_text_clause(
+                <= self.db_engine_spec.get_text_clause(
                     self.dttm_sql_literal(end_dttm, time_col)
                 )
             )
