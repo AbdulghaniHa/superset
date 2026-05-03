@@ -36,16 +36,24 @@ import { getPadding } from '../Timeseries/transformers';
 import { convertInteger } from '../utils/convertInteger';
 import { NULL_STRING } from '../constants';
 
+type BubbleDataPoint = [unknown, unknown, number, unknown, unknown];
+type BubbleSeriesOption = ScatterSeriesOption & {
+  data: [BubbleDataPoint];
+};
+
 function normalizeSymbolSize(
-  nodes: ScatterSeriesOption[],
+  nodes: BubbleSeriesOption[],
   maxBubbleValue: number,
 ) {
-  const [bubbleMinValue, bubbleMaxValue] = extent(nodes, x => x.data![0][2]);
+  const [bubbleMinValue = 0, bubbleMaxValue = 0] = extent(
+    nodes,
+    x => x.data[0][2],
+  );
   const nodeSpread = bubbleMaxValue - bubbleMinValue;
   nodes.forEach(node => {
     // eslint-disable-next-line no-param-reassign
     node.symbolSize =
-      (((node.data![0][2] - bubbleMinValue) / nodeSpread) *
+      (((node.data[0][2] - bubbleMinValue) / nodeSpread) *
         (maxBubbleValue * 2) || 0) + MINIMUM_BUBBLE_SIZE;
   });
 }
@@ -107,7 +115,7 @@ export default function transformProps(chartProps: EchartsBubbleChartProps) {
   const colorFn = CategoricalColorNamespace.getScale(colorScheme as string);
 
   const legends = new Set<string>();
-  const series: ScatterSeriesOption[] = [];
+  const series: BubbleSeriesOption[] = [];
 
   const xAxisLabel: string = getMetricLabel(x);
   const yAxisLabel: string = getMetricLabel(y);
@@ -126,7 +134,7 @@ export default function transformProps(chartProps: EchartsBubbleChartProps) {
         [
           datum[xAxisLabel],
           datum[yAxisLabel],
-          datum[sizeLabel],
+          datum[sizeLabel] as number,
           datum[entity],
           bubbleSeriesValue as any,
         ],

@@ -425,20 +425,22 @@ const SqlEditor: React.FC<Props> = ({
           const cursorPosition = editor.getCursorPosition();
           const totalLine = session.getLength();
           const currentRow = editor.getFirstVisibleRow();
-          let end = editor.find(';', {
+          const nextSemicolon = editor.find(';', {
             backwards: false,
             skipCurrent: true,
-          })?.end;
+          });
+          let end = nextSemicolon ? nextSemicolon.end : undefined;
           if (!end || end.row < cursorPosition.row) {
             end = {
               row: totalLine + 1,
               column: 0,
             };
           }
-          let start = editor.find(';', {
+          const previousSemicolon = editor.find(';', {
             backwards: true,
             skipCurrent: true,
-          })?.end;
+          });
+          let start = previousSemicolon ? previousSemicolon.end : undefined;
           let currentLine = start?.row;
           if (
             !currentLine ||
@@ -449,7 +451,7 @@ const SqlEditor: React.FC<Props> = ({
             currentLine = 0;
           }
           let content =
-            currentLine === start?.row
+            start && currentLine === start.row
               ? session.getLine(currentLine).slice(start.column).trim()
               : session.getLine(currentLine).trim();
           while (!content && currentLine < totalLine) {

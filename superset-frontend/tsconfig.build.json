@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "./src/**/*",
+    "./packages/*/src/**/*",
+    "./packages/*/types/**/*",
+    "./plugins/*/src/**/*",
+    "./plugins/*/types/**/*"
+  ],
+  "exclude": [
+    "./cypress-base/**/*",
+    "./spec/**/*",
+    "**/*.test.js",
+    "**/*.test.jsx",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.stories.jsx",
+    "**/*.stories.tsx"
+  ]
+}

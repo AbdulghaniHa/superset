@@ -158,12 +158,8 @@ if (!isDevMode) {
   plugins.push(
     // runs type checking on a separate process to speed up the build
     new ForkTsCheckerWebpackPlugin({
-      eslint: {
-        files: './{src,packages,plugins}/**/*.{ts,tsx,js,jsx}',
-        memoryLimit: 4096,
-        options: {
-          ignorePath: './.eslintignore',
-        },
+      typescript: {
+        configFile: path.resolve(APP_DIR, 'tsconfig.build.json'),
       },
     }),
   );
@@ -191,7 +187,6 @@ const babelLoader = {
     // disable gzip compression for cache files
     // faster when there are millions of small files
     cacheCompression: false,
-    plugins: ['emotion'],
     presets: [
       [
         '@emotion/babel-preset-css-prop',
