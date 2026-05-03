@@ -155,6 +155,7 @@ export default function transformProps(
     richTooltip,
     seriesType,
     showLegend,
+    showTotalLegend,
     showValue,
     sliceId,
     sortSeriesType,
@@ -210,6 +211,7 @@ export default function transformProps(
     rebasedData,
     {
       stack,
+      includeTotal: showTotalLegend,
       percentageThreshold,
       xAxisCol: xAxisLabel,
       legendState,
@@ -555,9 +557,7 @@ export default function transformProps(
         }
         const dataIndex = richTooltip ? params[0]?.dataIndex : params.dataIndex;
         if (
-          stack &&
-          showValue &&
-          onlyTotal &&
+          (showTotalLegend || (stack && showValue && onlyTotal)) &&
           isDefined(dataIndex) &&
           isDefined(sortedTotalValues[dataIndex])
         ) {

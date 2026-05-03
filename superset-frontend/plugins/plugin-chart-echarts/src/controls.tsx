@@ -143,6 +143,17 @@ export const onlyTotalControl: ControlSetItem = {
   },
 };
 
+export const showTotalLegendControl: ControlSetItem = {
+  name: 'show_total_legend',
+  config: {
+    type: 'CheckboxControl',
+    label: t('Show Total Legend'),
+    default: false,
+    renderTrigger: true,
+    description: t('Show a total row in the tooltip for the visible series'),
+  },
+};
+
 export const percentageThresholdControl: ControlSetItem = {
   name: 'percentage_threshold',
   config: {
@@ -165,12 +176,14 @@ export const showValueSection: ControlSetRow[] = [
   [showValueControl],
   [stackControl],
   [onlyTotalControl],
+  [showTotalLegendControl],
   [percentageThresholdControl],
 ];
 
 export const showValueSectionWithoutStack: ControlSetRow[] = [
   [showValueControl],
   [onlyTotalControl],
+  [showTotalLegendControl],
 ];
 
 const richTooltipControl: ControlSetItem = {

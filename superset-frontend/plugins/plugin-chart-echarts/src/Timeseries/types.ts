@@ -90,6 +90,7 @@ export type EchartsTimeseriesFormData = QueryFormData & {
   groupby: QueryFormColumn[];
   showValue: boolean;
   onlyTotal: boolean;
+  showTotalLegend: boolean;
   showExtraControls: boolean;
   percentageThreshold: number;
   orientation?: OrientationType;

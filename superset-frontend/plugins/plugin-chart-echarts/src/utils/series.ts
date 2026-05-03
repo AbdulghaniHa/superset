@@ -57,6 +57,7 @@ export function extractDataTotalValues(
   data: DataRecord[],
   opts: {
     stack: StackType;
+    includeTotal?: boolean;
     percentageThreshold: number;
     xAxisCol: string;
     legendState?: LegendState;
@@ -67,8 +68,9 @@ export function extractDataTotalValues(
 } {
   const totalStackedValues: number[] = [];
   const thresholdValues: number[] = [];
-  const { stack, percentageThreshold, xAxisCol, legendState } = opts;
-  if (stack) {
+  const { stack, includeTotal, percentageThreshold, xAxisCol, legendState } =
+    opts;
+  if (stack || includeTotal) {
     data.forEach(datum => {
       const values = Object.keys(datum).reduce((prev, curr) => {
         if (curr === xAxisCol) {
