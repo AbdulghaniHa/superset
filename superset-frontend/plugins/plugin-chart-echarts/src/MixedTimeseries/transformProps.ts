@@ -507,6 +507,7 @@ export default function transformProps(
       zoomable,
       dataZoomDefaultLastNDays,
       parsedLastNDays: parseDataZoomLastNDays(dataZoomDefaultLastNDays),
+      timeGrainSqla,
       xAxisType,
     },
   );
@@ -516,6 +517,7 @@ export default function transformProps(
     xAxisType,
     false,
     parseDataZoomLastNDays(dataZoomDefaultLastNDays),
+    timeGrainSqla,
   );
 
   const echartOptions: EChartsCoreOption = {

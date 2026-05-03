@@ -109,12 +109,12 @@ export const dataZoomDefaultLastNDaysControl: ControlSetItem = {
   name: 'dataZoomDefaultLastNDays',
   config: {
     type: 'TextControl',
-    label: t('Default zoom (last N days)'),
+    label: t('Default zoom (last N days or bars)'),
     renderTrigger: true,
     isInt: true,
     default: DEFAULT_FORM_DATA.dataZoomDefaultLastNDays,
     description: t(
-      'When Data Zoom is enabled, start zoomed to the last N calendar days ending at the current moment. Leave empty to show the full loaded range. This only changes the chart zoom, not the query or dashboard time filter.',
+      'When Data Zoom is enabled: for Day or Date time grain, shows the last N calendar days ending at load time. For any other time grain (week, month, hour, etc.), N is the number of x-axis buckets (bars) to show from the end of the series. Leave empty for the full loaded range. Does not change the query or dashboard time filter.',
     ),
     visibility: ({ controls }: ControlPanelsContainerProps) =>
       Boolean(controls?.zoomable?.value),

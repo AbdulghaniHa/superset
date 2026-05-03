@@ -19,11 +19,29 @@
 
 /* eslint-disable no-console -- trace dataZoom default window calculation for troubleshooting */
 
-import { AxisType, normalizeTimestamp } from '@superset-ui/core';
+import {
+  AxisType,
+  normalizeTimestamp,
+  TimeGranularity,
+} from '@superset-ui/core';
 import { SeriesOption } from 'echarts';
 
 const DAY_MS = 86400000;
 const LOG_PREFIX = '[dataZoomWindow]';
+
+export type InitialDataZoomRange =
+  | { start: number; end: number }
+  | { startValue: number | string; endValue: number | string };
+
+/** Daily chart time grains: N means last N calendar days. All other grains: N means last N x-axis points (bars). When grain is omitted, keeps legacy calendar-day behavior. */
+export function isCalendarDayTimeGrain(
+  grain: TimeGranularity | undefined | null,
+): boolean {
+  if (grain === undefined || grain === null) {
+    return true;
+  }
+  return grain === TimeGranularity.DAY || grain === TimeGranularity.DATE;
+}
 
 export function parseDataZoomLastNDays(raw: unknown): number | null {
   if (raw === null || raw === undefined || raw === '') {
@@ -52,6 +70,91 @@ export function normalizeChartXToUnixMs(value: unknown): number | null {
     return Number.isNaN(t) ? null : t;
   }
   return null;
+}
+
+function sliceSeriesRows(
+  seriesForExtent: SeriesOption[],
+  isHorizontal: boolean,
+): unknown[][] {
+  const idx = isHorizontal ? 1 : 0;
+  const firstSeries = seriesForExtent.find(
+    s => Array.isArray(s.data) && s.data.length,
+  );
+  const firstData = firstSeries?.data as unknown[] | undefined;
+  if (!firstData) {
+    return [];
+  }
+  return firstData.filter(
+    row => Array.isArray(row) && row.length > idx,
+  ) as unknown[][];
+}
+
+/**
+ * Last N x-axis buckets (bars), using series point order — not calendar length.
+ */
+function computeLastNBarsDataZoomRange(
+  seriesForExtent: SeriesOption[],
+  xAxisType: AxisType,
+  isHorizontal: boolean,
+  lastN: number,
+): InitialDataZoomRange {
+  if (xAxisType !== AxisType.Time && xAxisType !== AxisType.Category) {
+    console.log(
+      LOG_PREFIX,
+      'Bar window skipped: x-axis is not time or category',
+      xAxisType,
+    );
+    return { start: 0, end: 100 };
+  }
+
+  const rows = sliceSeriesRows(seriesForExtent, isHorizontal);
+  const total = rows.length;
+  if (total === 0) {
+    console.log(LOG_PREFIX, 'Bar window: no series rows');
+    return { start: 0, end: 100 };
+  }
+
+  const n = Math.min(lastN, total);
+  if (n <= 0 || n >= total) {
+    console.log(LOG_PREFIX, 'Bar window: N covers full series', {
+      lastN,
+      total,
+    });
+    return { start: 0, end: 100 };
+  }
+
+  const idx = isHorizontal ? 1 : 0;
+  const startRow = rows[total - n];
+  const endRow = rows[total - 1];
+  const startRaw = startRow[idx];
+  const endRaw = endRow[idx];
+
+  if (xAxisType === AxisType.Time) {
+    const startMs = normalizeChartXToUnixMs(startRaw);
+    const endMs = normalizeChartXToUnixMs(endRaw);
+    if (startMs == null || endMs == null) {
+      console.log(LOG_PREFIX, 'Bar window: could not parse time axis values');
+      return { start: 0, end: 100 };
+    }
+    console.log(LOG_PREFIX, 'Applying time-axis bar-count dataZoom', {
+      lastN: n,
+      totalBars: total,
+      startMs,
+      endMs,
+    });
+    return { startValue: startMs, endValue: endMs };
+  }
+
+  console.log(LOG_PREFIX, 'Applying category-axis bar-count dataZoom', {
+    lastN: n,
+    totalBars: total,
+    startRaw,
+    endRaw,
+  });
+  return {
+    startValue: startRaw as string | number,
+    endValue: endRaw as string | number,
+  };
 }
 
 /**
@@ -88,32 +191,16 @@ export function getSeriesTimeExtent(
   return { min, max };
 }
 
-export type InitialDataZoomRange =
-  | { start: number; end: number }
-  | { startValue: number | string; endValue: number | string };
-
-/**
- * Maps a rolling "last N calendar days ending now" window onto the initial
- * dataZoom slider. Does not affect queries — only the rendered zoom window.
- */
-export function computeInitialDataZoomRange(
+function computeCalendarDaysDataZoomRange(
   seriesForExtent: SeriesOption[],
   xAxisType: AxisType,
   isHorizontal: boolean,
-  lastNDays: number | null,
+  lastNDays: number,
 ): InitialDataZoomRange {
-  if (!lastNDays) {
-    console.log(
-      LOG_PREFIX,
-      'Using full axis range (control empty or invalid last N days)',
-    );
-    return { start: 0, end: 100 };
-  }
-
   if (xAxisType !== AxisType.Time && xAxisType !== AxisType.Category) {
     console.log(
       LOG_PREFIX,
-      'Skipping default window: x-axis is not time or category',
+      'Skipping calendar window: x-axis is not time or category',
       xAxisType,
     );
     return { start: 0, end: 100 };
@@ -123,14 +210,14 @@ export function computeInitialDataZoomRange(
   if (!extent) {
     console.log(
       LOG_PREFIX,
-      'Using full axis range (could not derive a time extent from series)',
+      'Calendar window: could not derive time extent from series',
     );
     return { start: 0, end: 100 };
   }
 
   const windowEndMs = Date.now();
   const windowStartMs = windowEndMs - lastNDays * DAY_MS;
-  console.log(LOG_PREFIX, 'Computed calendar window', {
+  console.log(LOG_PREFIX, 'Computed calendar-day window', {
     lastNDays,
     windowStartMs,
     windowEndMs,
@@ -149,7 +236,10 @@ export function computeInitialDataZoomRange(
   }
 
   if (xAxisType === AxisType.Time) {
-    console.log(LOG_PREFIX, 'Applying time-axis dataZoom', { startMs, endMs });
+    console.log(LOG_PREFIX, 'Applying calendar time-axis dataZoom', {
+      startMs,
+      endMs,
+    });
     return { startValue: startMs, endValue: endMs };
   }
 
@@ -170,13 +260,11 @@ export function computeInitialDataZoomRange(
   for (let i = 0; i < firstData.length; i += 1) {
     const row = firstData[i];
     if (!Array.isArray(row)) {
-      // continue
       continue;
     }
     const rawX = row[idx];
     const ms = normalizeChartXToUnixMs(rawX);
     if (ms == null) {
-      // continue
       continue;
     }
     if (ms >= startMs && startCat === undefined) {
@@ -190,14 +278,57 @@ export function computeInitialDataZoomRange(
   if (startCat === undefined || endCat === undefined) {
     console.log(
       LOG_PREFIX,
-      'Category axis: could not map window to category values',
+      'Category axis: could not map calendar window to category values',
     );
     return { start: 0, end: 100 };
   }
 
-  console.log(LOG_PREFIX, 'Applying category-axis dataZoom', {
+  console.log(LOG_PREFIX, 'Applying calendar category-axis dataZoom', {
     startCat,
     endCat,
   });
   return { startValue: startCat, endValue: endCat };
+}
+
+/**
+ * Initial dataZoom: for **Day** or **Date** time grain, last N calendar days
+ * ending at load time; for any other grain, last N x-axis points (bars).
+ */
+export function computeInitialDataZoomRange(
+  seriesForExtent: SeriesOption[],
+  xAxisType: AxisType,
+  isHorizontal: boolean,
+  lastN: number | null,
+  timeGrainSqla?: TimeGranularity | null,
+): InitialDataZoomRange {
+  if (!lastN) {
+    console.log(
+      LOG_PREFIX,
+      'Using full axis range (control empty or invalid N)',
+    );
+    return { start: 0, end: 100 };
+  }
+
+  const useCalendarDays = isCalendarDayTimeGrain(timeGrainSqla);
+  console.log(LOG_PREFIX, 'Choosing dataZoom mode', {
+    lastN,
+    timeGrainSqla,
+    useCalendarDays,
+  });
+
+  if (!useCalendarDays) {
+    return computeLastNBarsDataZoomRange(
+      seriesForExtent,
+      xAxisType,
+      isHorizontal,
+      lastN,
+    );
+  }
+
+  return computeCalendarDaysDataZoomRange(
+    seriesForExtent,
+    xAxisType,
+    isHorizontal,
+    lastN,
+  );
 }
