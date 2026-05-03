@@ -47,11 +47,8 @@ export function normalizeChartXToUnixMs(value: unknown): number | null {
     return value.getTime();
   }
   if (typeof value === 'string') {
-    const parsed = normalizeTimestamp(value);
-    if (parsed instanceof Date) {
-      return parsed.getTime();
-    }
-    const t = Date.parse(value);
+    const normalized = normalizeTimestamp(value);
+    const t = Date.parse(normalized);
     return Number.isNaN(t) ? null : t;
   }
   return null;
