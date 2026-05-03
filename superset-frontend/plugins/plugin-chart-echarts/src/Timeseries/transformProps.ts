@@ -93,6 +93,10 @@ import {
   TIMEGRAIN_TO_TIMESTAMP,
   TIMESERIES_CONSTANTS,
 } from '../constants';
+import {
+  computeInitialDataZoomRange,
+  parseDataZoomLastNDays,
+} from '../utils/dataZoomWindow';
 import { getDefaultTooltip } from '../utils/tooltip';
 import {
   getPercentFormatter,
@@ -183,6 +187,7 @@ export default function transformProps(
     yAxisTitleMargin,
     yAxisTitlePosition,
     zoomable,
+    dataZoomDefaultLastNDays,
   }: EchartsTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
   const refs: Refs = {};
 
@@ -335,6 +340,9 @@ export default function transformProps(
 
     series.unshift(baselineSeries);
   }
+
+  const seriesForDataZoomExtent: SeriesOption[] = [...series];
+
   const selectedValues = (filterState.selectedValues || []).reduce(
     (acc: Record<string, number>, selectedValue: string) => {
       const index = series.findIndex(({ name }) => name === selectedValue);
@@ -504,6 +512,22 @@ export default function transformProps(
     yAxis.inverse = true;
   }
 
+  // eslint-disable-next-line no-console -- trace initial dataZoom range from chart props
+  console.log('[Timeseries transformProps] Building dataZoom with options', {
+    zoomable,
+    dataZoomDefaultLastNDays,
+    parsedLastNDays: parseDataZoomLastNDays(dataZoomDefaultLastNDays),
+    isHorizontal,
+    xAxisType,
+  });
+
+  const initialDataZoomRange = computeInitialDataZoomRange(
+    seriesForDataZoomExtent,
+    xAxisType,
+    isHorizontal,
+    parseDataZoomLastNDays(dataZoomDefaultLastNDays),
+  );
+
   const echartOptions: EChartsCoreOption = {
     useUTC: true,
     grid: {
@@ -604,8 +628,8 @@ export default function transformProps(
       ? [
           {
             type: 'slider',
-            start: TIMESERIES_CONSTANTS.dataZoomStart,
-            end: TIMESERIES_CONSTANTS.dataZoomEnd,
+            ...initialDataZoomRange,
+            ...(isHorizontal ? { yAxisIndex: 0 } : {}),
             bottom: TIMESERIES_CONSTANTS.zoomBottom,
           },
         ]

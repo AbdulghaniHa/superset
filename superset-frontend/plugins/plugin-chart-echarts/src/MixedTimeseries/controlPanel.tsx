@@ -33,6 +33,7 @@ import {
 import { DEFAULT_FORM_DATA } from './types';
 import { EchartsTimeseriesSeriesType } from '../Timeseries/types';
 import {
+  dataZoomDefaultLastNDaysControl,
   legendSection,
   minorTicks,
   richTooltipSection,
@@ -314,6 +315,7 @@ const config: ControlPanelConfig = {
             },
           },
         ],
+        [dataZoomDefaultLastNDaysControl],
         [minorTicks],
         ...legendSection,
         [<ControlSubSectionHeader>{t('X Axis')}</ControlSubSectionHeader>],

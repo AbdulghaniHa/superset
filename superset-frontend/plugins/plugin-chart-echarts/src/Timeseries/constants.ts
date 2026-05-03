@@ -86,6 +86,8 @@ export const DEFAULT_FORM_DATA: EchartsTimeseriesFormData = {
   orientation: OrientationType.Vertical,
   sort_series_type: 'sum',
   sort_series_ascending: false,
+  /** Initial dataZoom window only; does not change the query time range. */
+  dataZoomDefaultLastNDays: null,
 };
 
 export const TIME_SERIES_DESCRIPTION_TEXT: string = t(

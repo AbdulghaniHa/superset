@@ -85,6 +85,8 @@ export type EchartsTimeseriesFormData = QueryFormData & {
   xAxisBounds: [number | undefined | null, number | undefined | null];
   yAxisBounds: [number | undefined | null, number | undefined | null];
   zoomable: boolean;
+  /** When set with Data Zoom, show only the last N days ending at load time (visual only). */
+  dataZoomDefaultLastNDays: number | null;
   richTooltip: boolean;
   xAxisLabelRotation: number;
   groupby: QueryFormColumn[];

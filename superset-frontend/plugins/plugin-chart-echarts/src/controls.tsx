@@ -105,6 +105,22 @@ export const legendSection: ControlSetRow[] = [
   [legendMarginControl],
 ];
 
+export const dataZoomDefaultLastNDaysControl: ControlSetItem = {
+  name: 'dataZoomDefaultLastNDays',
+  config: {
+    type: 'TextControl',
+    label: t('Default zoom (last N days)'),
+    renderTrigger: true,
+    isInt: true,
+    default: DEFAULT_FORM_DATA.dataZoomDefaultLastNDays,
+    description: t(
+      'When Data Zoom is enabled, start zoomed to the last N calendar days ending at the current moment. Leave empty to show the full loaded range. This only changes the chart zoom, not the query or dashboard time filter.',
+    ),
+    visibility: ({ controls }: ControlPanelsContainerProps) =>
+      Boolean(controls?.zoomable?.value),
+  },
+};
+
 export const showValueControl: ControlSetItem = {
   name: 'show_value',
   config: {

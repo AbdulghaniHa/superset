@@ -31,6 +31,7 @@ import {
   sharedControls,
 } from '@superset-ui/chart-controls';
 import {
+  dataZoomDefaultLastNDaysControl,
   legendSection,
   minorTicks,
   richTooltipSection,
@@ -312,6 +313,7 @@ const config: ControlPanelConfig = {
             },
           },
         ],
+        [dataZoomDefaultLastNDaysControl],
         ...legendSection,
         [<ControlSubSectionHeader>{t('X Axis')}</ControlSubSectionHeader>],
         ...createAxisControl('x'),

@@ -31,6 +31,7 @@ import {
 import { EchartsTimeseriesSeriesType } from '../types';
 import { DEFAULT_FORM_DATA, TIME_SERIES_DESCRIPTION_TEXT } from '../constants';
 import {
+  dataZoomDefaultLastNDaysControl,
   legendSection,
   onlyTotalControl,
   showTotalLegendControl,
@@ -184,6 +185,7 @@ const config: ControlPanelConfig = {
             },
           },
         ],
+        [dataZoomDefaultLastNDaysControl],
         ...legendSection,
         [<ControlSubSectionHeader>{t('X Axis')}</ControlSubSectionHeader>],
         [

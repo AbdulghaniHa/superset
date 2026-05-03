@@ -34,6 +34,7 @@ import {
   TIME_SERIES_DESCRIPTION_TEXT,
 } from '../../constants';
 import {
+  dataZoomDefaultLastNDaysControl,
   legendSection,
   minorTicks,
   richTooltipSection,
@@ -169,6 +170,7 @@ const config: ControlPanelConfig = {
             },
           },
         ],
+        [dataZoomDefaultLastNDaysControl],
         [minorTicks],
         ...legendSection,
         [<ControlSubSectionHeader>{t('X Axis')}</ControlSubSectionHeader>],

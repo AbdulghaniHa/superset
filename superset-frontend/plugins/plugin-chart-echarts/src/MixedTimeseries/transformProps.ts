@@ -87,6 +87,10 @@ import {
   transformTimeseriesAnnotation,
 } from '../Timeseries/transformers';
 import { TIMEGRAIN_TO_TIMESTAMP, TIMESERIES_CONSTANTS } from '../constants';
+import {
+  computeInitialDataZoomRange,
+  parseDataZoomLastNDays,
+} from '../utils/dataZoomWindow';
 import { getDefaultTooltip } from '../utils/tooltip';
 import {
   getTooltipTimeFormatter,
@@ -183,6 +187,7 @@ export default function transformProps(
     yAxisIndexB,
     yAxisTitleSecondary,
     zoomable,
+    dataZoomDefaultLastNDays,
     richTooltip,
     tooltipSortByMetric,
     xAxisBounds,
@@ -455,6 +460,11 @@ export default function transformProps(
     if (transformedSeries) series.push(transformedSeries);
   });
 
+  const seriesForDataZoomExtent: SeriesOption[] = [
+    ...rawSeriesA,
+    ...rawSeriesB,
+  ];
+
   // default to 0-100% range when doing row-level contribution chart
   if (contributionMode === 'row' && stack) {
     if (yAxisMin === undefined) yAxisMin = 0;
@@ -489,6 +499,24 @@ export default function transformProps(
 
   const { setDataMask = () => {}, onContextMenu } = hooks;
   const alignTicks = yAxisIndex !== yAxisIndexB;
+
+  // eslint-disable-next-line no-console -- trace initial dataZoom range from chart props
+  console.log(
+    '[MixedTimeseries transformProps] Building dataZoom with options',
+    {
+      zoomable,
+      dataZoomDefaultLastNDays,
+      parsedLastNDays: parseDataZoomLastNDays(dataZoomDefaultLastNDays),
+      xAxisType,
+    },
+  );
+
+  const initialDataZoomRange = computeInitialDataZoomRange(
+    seriesForDataZoomExtent,
+    xAxisType,
+    false,
+    parseDataZoomLastNDays(dataZoomDefaultLastNDays),
+  );
 
   const echartOptions: EChartsCoreOption = {
     useUTC: true,
@@ -662,8 +690,7 @@ export default function transformProps(
       ? [
           {
             type: 'slider',
-            start: TIMESERIES_CONSTANTS.dataZoomStart,
-            end: TIMESERIES_CONSTANTS.dataZoomEnd,
+            ...initialDataZoomRange,
             bottom: TIMESERIES_CONSTANTS.zoomBottom,
           },
         ]

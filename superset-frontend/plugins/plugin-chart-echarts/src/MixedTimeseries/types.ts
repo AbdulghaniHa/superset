@@ -59,6 +59,7 @@ export type EchartsMixedTimeseriesFormData = QueryFormData & {
   timeGrainSqla?: TimeGranularity;
   tooltipTimeFormat?: string;
   zoomable: boolean;
+  dataZoomDefaultLastNDays: number | null;
   richTooltip: boolean;
   xAxisLabelRotation: number;
   colorScheme?: string;
@@ -131,6 +132,7 @@ export const DEFAULT_FORM_DATA: EchartsMixedTimeseriesFormData = {
   groupby: [],
   groupbyB: [],
   zoomable: TIMESERIES_DEFAULTS.zoomable,
+  dataZoomDefaultLastNDays: TIMESERIES_DEFAULTS.dataZoomDefaultLastNDays,
   richTooltip: TIMESERIES_DEFAULTS.richTooltip,
   xAxisLabelRotation: TIMESERIES_DEFAULTS.xAxisLabelRotation,
   ...DEFAULT_TITLE_FORM_DATA,
