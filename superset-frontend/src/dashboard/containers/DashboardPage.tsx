@@ -103,7 +103,7 @@ export const DashboardPage: FC<PageProps> = ({ idOrSlug }: PageProps) => {
 
   useEffect(() => {
     // eslint-disable-next-line no-console
-    console.log('changes v.0.1');
+    console.log('changes v.0.2');
   }, []);
 
   useEffect(() => {
