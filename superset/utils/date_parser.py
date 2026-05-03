@@ -98,6 +98,12 @@ def dttm_from_timetuple(date_: struct_time) -> datetime:
     )
 
 
+def end_of_day_if_midnight(dttm: datetime) -> datetime:
+    if not (dttm.hour or dttm.minute or dttm.second or dttm.microsecond):
+        return dttm.replace(hour=23, minute=59, second=59, microsecond=999999)
+    return dttm
+
+
 def get_past_or_future(
     human_readable: Optional[str],
     source_time: Optional[datetime] = None,
@@ -182,7 +188,11 @@ def get_since_until(  # pylint: disable=too-many-arguments,too-many-locals,too-m
     if time_range == NO_TIME_RANGE or time_range == _(NO_TIME_RANGE):
         return None, None
 
-    if time_range and time_range.startswith("Last") and separator not in time_range:
+    is_relative_last_range = bool(
+        time_range and time_range.startswith("Last") and separator not in time_range
+    )
+
+    if is_relative_last_range:
         time_range = time_range + separator + _relative_end
 
     if time_range and time_range.startswith("Next") and separator not in time_range:
@@ -258,6 +268,9 @@ def get_since_until(  # pylint: disable=too-many-arguments,too-many-locals,too-m
             if until
             else parse_human_datetime(_relative_end)
         )
+
+    if is_relative_last_range and _until:
+        _until = end_of_day_if_midnight(_until)
 
     if time_shift:
         time_delta = parse_past_timedelta(time_shift)

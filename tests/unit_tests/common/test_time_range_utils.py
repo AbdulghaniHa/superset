@@ -47,7 +47,7 @@ def test__get_since_until_from_time_range():
                     "relative_end": "2100",
                 },
             )
-        )[1] == datetime(2100, 1, 1, 0, 0)
+        )[1] == datetime(2100, 1, 1, 23, 59, 59, 999999)
     with mock.patch(
         "superset.utils.date_parser.EvalDateTruncFunc.eval",
         return_value=datetime(2000, 1, 1, 0, 0, 0),

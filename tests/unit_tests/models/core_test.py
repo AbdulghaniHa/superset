@@ -26,7 +26,6 @@ from sqlalchemy.engine.reflection import Inspector
 
 from superset.connectors.sqla.models import SqlaTable, TableColumn
 from superset.models.core import Database
-from superset.models.helpers import end_of_day_if_midnight
 
 
 def test_get_metrics(mocker: MockFixture) -> None:
@@ -208,15 +207,6 @@ def test_dttm_sql_literal(
     result: str,
 ) -> None:
     assert SqlaTable(database=database).dttm_sql_literal(dttm, col) == result
-
-
-def test_end_of_day_if_midnight() -> None:
-    assert end_of_day_if_midnight(datetime(2023, 1, 1)) == datetime(
-        2023, 1, 1, 23, 59, 59, 999999
-    )
-    assert end_of_day_if_midnight(datetime(2023, 1, 1, 12, 34, 56)) == datetime(
-        2023, 1, 1, 12, 34, 56
-    )
 
 
 def test_table_column_database() -> None:

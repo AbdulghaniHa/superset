@@ -165,12 +165,6 @@ def convert_uuids(obj: Any) -> Any:
     return obj
 
 
-def end_of_day_if_midnight(dttm: datetime) -> datetime:
-    if not (dttm.hour or dttm.minute or dttm.second or dttm.microsecond):
-        return dttm.replace(hour=23, minute=59, second=59, microsecond=999999)
-    return dttm
-
-
 class ImportExportMixin:
     uuid = sa.Column(
         UUIDType(binary=True), primary_key=False, unique=True, default=uuid.uuid4
@@ -1337,7 +1331,6 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
                 )
             )
         if end_dttm:
-            end_dttm = end_of_day_if_midnight(end_dttm)
             l.append(
                 col
                 <= self.db_engine_spec.get_text_clause(

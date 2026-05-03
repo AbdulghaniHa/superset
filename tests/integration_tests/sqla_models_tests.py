@@ -719,7 +719,7 @@ def test_should_generate_closed_time_filter_range(login_as_admin):
             "is_timeseries": False,
             "filter": [],
             "from_dttm": datetime(2022, 1, 1),
-            "to_dttm": datetime(2023, 1, 1),
+            "to_dttm": datetime(2023, 1, 1, 23, 59, 59, 999999),
             "granularity": "datetime_col",
         }
     )

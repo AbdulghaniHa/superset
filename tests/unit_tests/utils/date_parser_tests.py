@@ -29,6 +29,7 @@ from superset.commands.chart.exceptions import (
 from superset.utils.date_parser import (
     DateRangeMigration,
     datetime_eval,
+    end_of_day_if_midnight,
     get_past_or_future,
     get_since_until,
     parse_human_datetime,
@@ -95,19 +96,19 @@ def test_get_since_until() -> None:
     assert result == expected
 
     result = get_since_until("Last year")
-    expected = datetime(2015, 11, 7), datetime(2016, 11, 7)
+    expected = datetime(2015, 11, 7), datetime(2016, 11, 7, 23, 59, 59, 999999)
     assert result == expected
 
     result = get_since_until("Last quarter")
-    expected = datetime(2016, 8, 7), datetime(2016, 11, 7)
+    expected = datetime(2016, 8, 7), datetime(2016, 11, 7, 23, 59, 59, 999999)
     assert result == expected
 
     result = get_since_until("Last 5 months")
-    expected = datetime(2016, 6, 7), datetime(2016, 11, 7)
+    expected = datetime(2016, 6, 7), datetime(2016, 11, 7, 23, 59, 59, 999999)
     assert result == expected
 
     result = get_since_until("Last 1 month")
-    expected = datetime(2016, 10, 7), datetime(2016, 11, 7)
+    expected = datetime(2016, 10, 7), datetime(2016, 11, 7, 23, 59, 59, 999999)
     assert result == expected
 
     result = get_since_until("Next 5 months")
@@ -139,7 +140,10 @@ def test_get_since_until() -> None:
     assert result == expected
 
     result = get_since_until("Last week", relative_start="now")
-    expected = datetime(2016, 10, 31, 9, 30, 10), datetime(2016, 11, 7)
+    expected = (
+        datetime(2016, 10, 31, 9, 30, 10),
+        datetime(2016, 11, 7, 23, 59, 59, 999999),
+    )
     assert result == expected
 
     result = get_since_until("Last week", relative_start="now", relative_end="now")
@@ -189,6 +193,15 @@ def test_get_since_until() -> None:
 
     with pytest.raises(ValueError):
         get_since_until(time_range="tomorrow : yesterday")
+
+
+def test_end_of_day_if_midnight() -> None:
+    assert end_of_day_if_midnight(datetime(2023, 1, 1)) == datetime(
+        2023, 1, 1, 23, 59, 59, 999999
+    )
+    assert end_of_day_if_midnight(datetime(2023, 1, 1, 12, 34, 56)) == datetime(
+        2023, 1, 1, 12, 34, 56
+    )
 
 
 @with_feature_flags(CHART_PLUGINS_EXPERIMENTAL=True)
