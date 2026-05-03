@@ -248,7 +248,7 @@ const row_limit: SharedControlConfig<'SelectControl'> = {
     (v, state) => validateMaxValue(v, state?.maxValue || DEFAULT_MAX_ROW),
   ],
   default: 10000,
-  choices: formatSelectOptions(ROW_LIMIT_OPTIONS),
+  choices: [[0, t('No limit')], ...formatSelectOptions(ROW_LIMIT_OPTIONS)],
   description: t(
     'Limits the number of the rows that are computed in the query that is the source of the data used for this chart.',
   ),

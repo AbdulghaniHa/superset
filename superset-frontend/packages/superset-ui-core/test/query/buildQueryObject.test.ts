@@ -202,6 +202,10 @@ describe('buildQueryObject', () => {
     expect(query.row_limit).toStrictEqual(1000);
     expect(query.row_offset).toStrictEqual(50);
 
+    // no limit
+    query = buildQueryObject({ ...baseQuery, row_limit: 0 });
+    expect(query.row_limit).toStrictEqual(0);
+
     // valid string
     query = buildQueryObject({
       ...baseQuery,

@@ -340,7 +340,7 @@ export const controls = {
     label: t('Row limit'),
     validators: [legacyValidateInteger],
     default: 10000,
-    choices: formatSelectOptions(ROW_LIMIT_OPTIONS),
+    choices: [[0, t('No limit')], ...formatSelectOptions(ROW_LIMIT_OPTIONS)],
     description: t('Limits the number of rows that get displayed.'),
   },
 

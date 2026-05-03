@@ -56,6 +56,14 @@ test('RowCountLabel renders limit with danger and tooltip', async () => {
   expect(tooltip).toHaveStyle('background: rgba(0, 0, 0, 0.902);');
 });
 
+test('RowCountLabel does not treat zero as a reached limit', () => {
+  render(<RowCountLabel rowcount={0} limit={0} />);
+  const expectedText = '0 rows';
+  expect(screen.getByText(expectedText)).toBeInTheDocument();
+  userEvent.hover(screen.getByText(expectedText));
+  expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+});
+
 test('RowCountLabel renders loading', () => {
   render(<RowCountLabel loading />);
   const expectedText = 'Loading...';

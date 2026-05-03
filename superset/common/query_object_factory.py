@@ -103,6 +103,8 @@ class QueryObjectFactory:  # pylint: disable=too-few-public-methods
             if result_type == ChartDataResultType.SAMPLES
             else self._config["ROW_LIMIT"]
         )
+        if row_limit == 0:
+            return 0
         return apply_max_row_limit(row_limit or default_row_limit)
 
     @staticmethod
