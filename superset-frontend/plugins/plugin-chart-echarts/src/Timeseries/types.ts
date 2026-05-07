@@ -76,6 +76,7 @@ export type EchartsTimeseriesFormData = QueryFormData & {
   stack: StackType;
   timeCompare?: string[];
   tooltipTimeFormat?: string;
+  tooltipValueFormat?: string;
   truncateXAxis: boolean;
   truncateYAxis: boolean;
   yAxisFormat?: string;

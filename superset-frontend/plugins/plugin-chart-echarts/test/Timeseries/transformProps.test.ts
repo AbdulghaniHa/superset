@@ -23,10 +23,12 @@ import {
   ChartProps,
   EventAnnotationLayer,
   FormulaAnnotationLayer,
+  GenericDataType,
   IntervalAnnotationLayer,
   SqlaFormData,
   supersetTheme,
   TimeseriesAnnotationLayer,
+  DTTM_ALIAS,
 } from '@superset-ui/core';
 import { EchartsTimeseriesChartProps } from '../../src/types';
 import transformProps from '../../src/Timeseries/transformProps';
@@ -400,6 +402,49 @@ describe('EchartsTimeseries transformProps', () => {
         [599616000006, -442.9833136960517],
       ],
     });
+  });
+
+  it('uses tooltip value format for tooltip values and totals', () => {
+    const chartProps = new ChartProps({
+      ...chartPropsConfig,
+      formData: {
+        ...formData,
+        groupby: [],
+        yAxisFormat: ',d',
+        tooltipValueFormat: '.3s',
+        showTotalLegend: true,
+      },
+      queriesData: [
+        {
+          data: [{ [DTTM_ALIAS]: 599616000000, sum__num: 12345.432 }],
+          colnames: [DTTM_ALIAS, 'sum__num'],
+          coltypes: [GenericDataType.Temporal, GenericDataType.Numeric],
+          label_map: {
+            sum__num: ['sum__num'],
+          },
+        },
+      ],
+    });
+
+    const transformedProps = transformProps(
+      chartProps as unknown as EchartsTimeseriesChartProps,
+    );
+    const tooltipFormatter = (transformedProps.echartOptions as any).tooltip
+      .formatter as Function;
+
+    const tooltip = tooltipFormatter([
+      {
+        data: [599616000000, 12345.432],
+        dataIndex: 0,
+        marker: '',
+        seriesId: 'sum__num',
+        value: [599616000000, 12345.432],
+      },
+    ]);
+
+    expect(tooltip).toContain('sum__num: 12.3k');
+    expect(tooltip).toContain('Total: 12.3k');
+    expect(tooltip).not.toContain('12,345');
   });
 });
 

@@ -168,6 +168,7 @@ export default function transformProps(
     timeCompare,
     stack,
     tooltipTimeFormat,
+    tooltipValueFormat,
     tooltipSortByMetric,
     truncateXAxis,
     truncateYAxis,
@@ -265,6 +266,14 @@ export default function transformProps(
   const defaultFormatter = currencyFormat?.symbol
     ? new CurrencyFormatter({ d3Format: yAxisFormat, currency: currencyFormat })
     : getNumberFormatter(yAxisFormat);
+  const tooltipValueFormatter = tooltipValueFormat
+    ? currencyFormat?.symbol
+      ? new CurrencyFormatter({
+          d3Format: tooltipValueFormat,
+          currency: currencyFormat,
+        })
+      : getNumberFormatter(tooltipValueFormat)
+    : undefined;
   const customFormatters = buildCustomFormatters(
     metrics,
     currencyFormats,
@@ -571,7 +580,8 @@ export default function transformProps(
             seriesName: key,
             formatter: forcePercentFormatter
               ? percentFormatter
-              : getCustomFormatter(customFormatters, metrics, formatterKey) ??
+              : tooltipValueFormatter ??
+                getCustomFormatter(customFormatters, metrics, formatterKey) ??
                 defaultFormatter,
           });
           const contentStyle =
@@ -589,7 +599,7 @@ export default function transformProps(
         ) {
           const totalFormatter = forcePercentFormatter
             ? percentFormatter
-            : defaultFormatter;
+            : tooltipValueFormatter ?? defaultFormatter;
           rows.push(
             `<span style="font-weight: 700">${t('Total')}: ${totalFormatter(
               isAreaExpand ? 1 : sortedTotalValues[dataIndex],

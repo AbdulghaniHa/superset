@@ -176,6 +176,7 @@ export default function transformProps(
     truncateXAxis,
     truncateYAxis,
     tooltipTimeFormat,
+    tooltipValueFormat,
     yAxisFormat,
     currencyFormat,
     yAxisFormatSecondary,
@@ -252,6 +253,22 @@ export default function transformProps(
           currency: currencyFormatSecondary,
         })
       : getNumberFormatter(yAxisFormatSecondary);
+  const tooltipValueFormatter = tooltipValueFormat
+    ? currencyFormat?.symbol
+      ? new CurrencyFormatter({
+          d3Format: tooltipValueFormat,
+          currency: currencyFormat,
+        })
+      : getNumberFormatter(tooltipValueFormat)
+    : undefined;
+  const tooltipValueFormatterSecondary = tooltipValueFormat
+    ? currencyFormatSecondary?.symbol
+      ? new CurrencyFormatter({
+          d3Format: tooltipValueFormat,
+          currency: currencyFormatSecondary,
+        })
+      : getNumberFormatter(tooltipValueFormat)
+    : undefined;
   const customFormatters = buildCustomFormatters(
     [...ensureIsArray(metrics), ...ensureIsArray(metricsB)],
     currencyFormats,
@@ -644,8 +661,12 @@ export default function transformProps(
             ...value,
             seriesName: key,
             formatter: primarySeries.has(key)
-              ? tooltipFormatter
-              : tooltipFormatterSecondary,
+              ? contributionMode
+                ? tooltipFormatter
+                : tooltipValueFormatter ?? tooltipFormatter
+              : contributionMode
+                ? tooltipFormatterSecondary
+                : tooltipValueFormatterSecondary ?? tooltipFormatterSecondary,
           });
           const contentStyle =
             key === focusedSeries ? 'font-weight: 700' : 'opacity: 0.7';

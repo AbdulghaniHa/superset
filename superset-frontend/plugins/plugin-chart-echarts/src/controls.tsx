@@ -225,6 +225,17 @@ const tooltipTimeFormatControl: ControlSetItem = {
   },
 };
 
+const tooltipValueFormatControl: ControlSetItem = {
+  name: 'tooltipValueFormat',
+  config: {
+    ...sharedControls.y_axis_format,
+    label: t('Tooltip value format'),
+    default: DEFAULT_FORM_DATA.tooltipValueFormat,
+    placeholder: t('Same as y-axis'),
+    description: t('Number format for values shown in the tooltip'),
+  },
+};
+
 const tooltipSortByMetricControl: ControlSetItem = {
   name: 'tooltipSortByMetric',
   config: {
@@ -245,6 +256,7 @@ export const richTooltipSection: ControlSetRow[] = [
   [richTooltipControl],
   [tooltipSortByMetricControl],
   [tooltipTimeFormatControl],
+  [tooltipValueFormatControl],
 ];
 
 const sortSeriesType: ControlSetItem = {
