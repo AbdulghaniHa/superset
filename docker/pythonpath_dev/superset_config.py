@@ -129,6 +129,7 @@ WEBDRIVER_BASEURL = "http://superset:8088/"
 WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
 
 SQLLAB_CTAS_NO_LIMIT = True
+SQLLAB_ALLOW_DML = True
 
 #
 # Optionally import superset_config_docker.py (which will have been included on

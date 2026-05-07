@@ -60,6 +60,42 @@ def test_execute_sql_statement(mocker: MockerFixture, app: None) -> None:
     SupersetResultSet.assert_called_with([(42,)], cursor.description, db_engine_spec)
 
 
+def test_execute_sql_statement_with_global_dml_enabled(
+    mocker: MockerFixture, app: None
+) -> None:
+    """
+    Test global DML override for `execute_sql_statement`.
+    """
+    from superset.sql_lab import execute_sql_statement
+
+    sql_statement = "INSERT INTO logs VALUES ('ok')"
+
+    query = mocker.MagicMock()
+    query.limit = None
+    query.select_as_cta_used = False
+    database = query.database
+    database.allow_dml = False
+    db_engine_spec = database.db_engine_spec
+    db_engine_spec.is_readonly_query.return_value = False
+    db_engine_spec.is_select_query.return_value = False
+    db_engine_spec.fetch_data.return_value = []
+
+    cursor = mocker.MagicMock()
+    SupersetResultSet = mocker.patch("superset.sql_lab.SupersetResultSet")
+    mocker.patch("superset.sql_lab.SQLLAB_ALLOW_DML", True)
+
+    execute_sql_statement(
+        sql_statement,
+        query,
+        cursor=cursor,
+        log_params={},
+        apply_ctas=False,
+    )
+
+    db_engine_spec.execute_with_cursor.assert_called_with(cursor, sql_statement, query)
+    SupersetResultSet.assert_called_with([], cursor.description, db_engine_spec)
+
+
 def test_execute_sql_statement_with_rls(
     mocker: MockerFixture,
 ) -> None:

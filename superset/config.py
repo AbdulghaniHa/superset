@@ -977,6 +977,10 @@ SQLLAB_VALIDATION_TIMEOUT = int(timedelta(seconds=10).total_seconds())
 # SQLLAB_DEFAULT_DBID
 SQLLAB_DEFAULT_DBID = None
 
+# Allow users to run non-readonly statements in SQL Lab, regardless of the
+# per-database "Allow DML" setting.
+SQLLAB_ALLOW_DML = False
+
 # The MAX duration a query can run for before being killed by celery.
 SQLLAB_ASYNC_TIME_LIMIT_SEC = int(timedelta(hours=6).total_seconds())
 

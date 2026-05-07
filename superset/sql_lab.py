@@ -69,6 +69,7 @@ SQLLAB_TIMEOUT = config["SQLLAB_ASYNC_TIME_LIMIT_SEC"]
 SQLLAB_HARD_TIMEOUT = SQLLAB_TIMEOUT + 60
 SQL_MAX_ROW = config["SQL_MAX_ROW"]
 SQLLAB_CTAS_NO_LIMIT = config["SQLLAB_CTAS_NO_LIMIT"]
+SQLLAB_ALLOW_DML = config["SQLLAB_ALLOW_DML"]
 SQL_QUERY_MUTATOR = config["SQL_QUERY_MUTATOR"]
 log_query = config["QUERY_LOGGER"]
 logger = logging.getLogger(__name__)
@@ -230,7 +231,11 @@ def execute_sql_statement(
     # We are testing to see if more rows exist than the limit.
     increased_limit = None if query.limit is None else query.limit + 1
 
-    if not db_engine_spec.is_readonly_query(parsed_query) and not database.allow_dml:
+    if (
+        not SQLLAB_ALLOW_DML
+        and not db_engine_spec.is_readonly_query(parsed_query)
+        and not database.allow_dml
+    ):
         raise SupersetErrorException(
             SupersetError(
                 message=__("Only SELECT statements are allowed against this database."),
