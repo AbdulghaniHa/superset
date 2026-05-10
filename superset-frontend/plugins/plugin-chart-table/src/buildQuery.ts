@@ -56,6 +56,8 @@ const buildQuery: BuildQuery<TableChartFormData> = (
     order_desc: orderDesc = false,
     extra_form_data,
   } = formData;
+  const isDownload =
+    formData.result_format === 'csv' || formData.result_format === 'xlsx';
   const queryMode = getQueryMode(formData);
   const sortByMetric = ensureIsArray(formData.timeseries_limit_metric)[0];
   const time_grain_sqla =
@@ -138,6 +140,20 @@ const buildQuery: BuildQuery<TableChartFormData> = (
       post_processing: postProcessing,
       ...moreProps,
     };
+
+    const downloadableRows = formData.downloadable_rows ?? formData.row_limit;
+    const numericDownloadableRows = Number(downloadableRows);
+    if (
+      isDownload &&
+      downloadableRows != null &&
+      !Number.isNaN(numericDownloadableRows)
+    ) {
+      queryObject = {
+        ...queryObject,
+        row_limit: numericDownloadableRows,
+        row_offset: 0,
+      };
+    }
 
     if (
       formData.server_pagination &&

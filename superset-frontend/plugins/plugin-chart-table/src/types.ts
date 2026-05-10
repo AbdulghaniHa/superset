@@ -80,6 +80,7 @@ export type TableChartFormData = QueryFormData & {
   include_search?: boolean;
   query_mode?: QueryMode;
   page_length?: string | number | null; // null means auto-paginate
+  downloadable_rows?: string | number | null;
   metrics?: QueryFormMetric[] | null;
   percent_metrics?: QueryFormMetric[] | null;
   timeseries_limit_metric?: QueryFormMetric[] | QueryFormMetric | null;

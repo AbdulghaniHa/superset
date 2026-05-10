@@ -81,6 +81,39 @@ describe('plugin-chart-table', () => {
       expect(query.columns).toEqual(['rawcol']);
       expect(query.post_processing).toEqual([]);
     });
+    it('should use row limit for regular table queries', () => {
+      const query = buildQuery({
+        ...basicFormData,
+        row_limit: 1000,
+        downloadable_rows: 0,
+      }).queries[0];
+      expect(query.row_limit).toBe(1000);
+    });
+    it('should use downloadable rows for CSV and Excel exports', () => {
+      const csvQuery = buildQuery({
+        ...basicFormData,
+        row_limit: 1000,
+        downloadable_rows: 0,
+        result_format: 'csv',
+      }).queries[0];
+      const excelQuery = buildQuery({
+        ...basicFormData,
+        row_limit: 1000,
+        downloadable_rows: 50000,
+        result_format: 'xlsx',
+      }).queries[0];
+
+      expect(csvQuery.row_limit).toBe(0);
+      expect(excelQuery.row_limit).toBe(50000);
+    });
+    it('should default downloadable rows to row limit when exporting', () => {
+      const query = buildQuery({
+        ...basicFormData,
+        row_limit: 5000,
+        result_format: 'xlsx',
+      }).queries[0];
+      expect(query.row_limit).toBe(5000);
+    });
     it('should prefer extra_form_data.time_grain_sqla over formData.time_grain_sqla', () => {
       const query = buildQuery({
         ...basicFormData,

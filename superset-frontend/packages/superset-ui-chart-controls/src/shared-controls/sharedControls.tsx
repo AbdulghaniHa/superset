@@ -254,6 +254,14 @@ const row_limit: SharedControlConfig<'SelectControl'> = {
   ),
 };
 
+const downloadable_rows: SharedControlConfig<'SelectControl'> = {
+  ...row_limit,
+  label: t('Downloadable rows'),
+  description: t(
+    'Limits the number of rows that are downloaded when exporting this chart.',
+  ),
+};
+
 const order_desc: SharedControlConfig<'CheckboxControl'> = {
   type: 'CheckboxControl',
   label: t('Sort Descending'),
@@ -396,6 +404,7 @@ export default {
   time_grain_sqla,
   time_range,
   row_limit,
+  downloadable_rows,
   limit,
   timeseries_limit_metric: dndSortByControl,
   orderby: dndSortByControl,

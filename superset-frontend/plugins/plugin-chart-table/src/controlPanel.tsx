@@ -23,6 +23,7 @@ import {
   ensureIsArray,
   GenericDataType,
   isAdhocColumn,
+  isDefined,
   isPhysicalColumn,
   QueryFormColumn,
   QueryMode,
@@ -305,6 +306,25 @@ const config: ControlPanelConfig = {
                 !controls?.server_pagination?.value,
             },
           },
+          {
+            name: 'downloadable_rows',
+            override: {
+              default: 1000,
+              initialValue: (
+                control: ControlState,
+                state: ControlPanelState | null,
+              ) =>
+                isDefined(control.value)
+                  ? control.value
+                  : state?.form_data?.row_limit ??
+                    state?.controls?.row_limit?.value ??
+                    1000,
+              visibility: ({ controls }: ControlPanelsContainerProps) =>
+                !controls?.server_pagination?.value,
+            },
+          },
+        ],
+        [
           {
             name: 'server_page_length',
             config: {
