@@ -41,6 +41,7 @@ from tests.integration_tests.fixtures.energy_dashboard import (
     load_energy_table_data,
 )
 import pytest
+import pandas as pd
 from superset.models.slice import Slice
 
 from superset.commands.chart.data.get_data_command import ChartDataCommand
@@ -325,6 +326,8 @@ class TestPostChartDataApi(BaseTestChartDataApi):
         rv = self.post_assert_metric(CHART_DATA_URI, self.query_context_payload, "data")
         assert rv.status_code == 200
         assert rv.mimetype == "text/csv"
+        assert "Exported by" not in rv.data.decode("utf-8")
+        assert "Export date" not in rv.data.decode("utf-8")
 
     @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_with_excel_result_format(self):
@@ -336,6 +339,15 @@ class TestPostChartDataApi(BaseTestChartDataApi):
         rv = self.post_assert_metric(CHART_DATA_URI, self.query_context_payload, "data")
         assert rv.status_code == 200
         assert rv.mimetype == mimetype
+        workbook = pd.ExcelFile(BytesIO(rv.data))
+        assert workbook.sheet_names == ["Sheet1", "Export Metadata"]
+        data_sheet = pd.read_excel(workbook, sheet_name="Sheet1")
+        assert not {"D", "C", "Field", "Value"}.intersection(data_sheet.columns)
+        metadata_sheet = pd.read_excel(workbook, sheet_name="Export Metadata")
+        assert metadata_sheet.to_dict("records")[0] == {
+            "Field": "Exported by",
+            "Value": "admin user",
+        }
 
     @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_with_multi_query_csv_result_format(self):

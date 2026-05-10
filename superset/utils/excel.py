@@ -15,20 +15,36 @@
 # specific language governing permissions and limitations
 # under the License.
 import io
-from typing import Any
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import pandas as pd
 
 
-def df_to_excel(df: pd.DataFrame, **kwargs: Any) -> Any:
-    output = io.BytesIO()
+def _stringify_unsupported_timezones(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
 
     # timezones are not supported
     for column in df.select_dtypes(include=["datetimetz"]).columns:
         df[column] = df[column].astype(str)
 
+    return df
+
+
+def df_to_excel(
+    df: pd.DataFrame,
+    extra_sheets: Optional[Mapping[str, pd.DataFrame]] = None,
+    **kwargs: Any,
+) -> Any:
+    output = io.BytesIO()
+    df = _stringify_unsupported_timezones(df)
+
     # pylint: disable=abstract-class-instantiated
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
         df.to_excel(writer, **kwargs)
+        if extra_sheets:
+            for sheet_name, sheet_df in extra_sheets.items():
+                sheet_df = _stringify_unsupported_timezones(sheet_df)
+                sheet_df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     return output.getvalue()

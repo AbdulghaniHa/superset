@@ -19,6 +19,7 @@ from __future__ import annotations
 import copy
 import logging
 import re
+from datetime import datetime
 from typing import Any, ClassVar, TYPE_CHECKING, TypedDict
 
 import numpy as np
@@ -59,9 +60,11 @@ from superset.utils.core import (
     get_column_names_from_columns,
     get_column_names_from_metrics,
     get_metric_names,
+    get_user,
     get_xaxis_label,
     normalize_dttm_col,
     TIME_COMPARISON,
+    user_label,
 )
 from superset.utils.date_parser import get_past_or_future, normalize_time_delta
 from superset.utils.pandas_postprocessing.utils import unescape_separator
@@ -571,21 +574,21 @@ class QueryContextProcessor:
                     df, index=include_index, **config["CSV_EXPORT"]
                 )
             elif self._query_context.result_format == ChartDataResultFormat.XLSX:
-                # You might need to import datetime and define exporter_name somewhere in your code.
-                from datetime import datetime
-                exporter_name = "Your Exporter Name"  # This could be dynamically set as needed
-                export_date = datetime.now().strftime('%Y-%m-%d')
-
-                print("debug 1")
-                # Insert a header row with custom information
-                header_df = pd.DataFrame({
-                    'D': [f'Exported by: {exporter_name}', f'Export date: {export_date}'],
-                    'C': ['', '']  # Add as many columns as you need to fill the header properly
-                })
-                print(header_df)
-                df = pd.concat([header_df, df], ignore_index=True)
-
-                result = excel.df_to_excel(df, **config["EXCEL_EXPORT"])
+                current_user = get_user()
+                export_metadata = pd.DataFrame(
+                    {
+                        "Field": ["Exported by", "Export date"],
+                        "Value": [
+                            user_label(current_user) or "",
+                            datetime.now().strftime("%Y-%m-%d"),
+                        ],
+                    }
+                )
+                result = excel.df_to_excel(
+                    df,
+                    extra_sheets={"Export Metadata": export_metadata},
+                    **config["EXCEL_EXPORT"],
+                )
             return result or ""
 
         return df.to_dict(orient="records")
