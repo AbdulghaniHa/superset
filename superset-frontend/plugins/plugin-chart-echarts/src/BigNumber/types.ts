@@ -49,6 +49,12 @@ export type BigNumberWithTrendlineFormData = BigNumberTotalFormData & {
   compareLag?: string | number;
 };
 
+export type BigNumberWithTrendlineV2FormData = BigNumberTotalFormData & {
+  metrics?: QueryFormMetric[];
+  targetLabel?: string;
+  secondaryTargetLabel?: string;
+};
+
 export interface BigNumberTotalChartDataResponseResult
   extends ChartDataResponseResult {
   data: BigNumberDatum[];
@@ -65,7 +71,21 @@ export type BigNumberWithTrendlineChartProps =
     formData: BigNumberWithTrendlineFormData;
   };
 
+export type BigNumberWithTrendlineV2ChartProps =
+  BaseChartProps<BigNumberWithTrendlineV2FormData> & {
+    formData: BigNumberWithTrendlineV2FormData;
+    queriesData: BigNumberTotalChartDataResponseResult[];
+  };
+
 export type TimeSeriesDatum = [number, number | null];
+
+export type BigNumberV2Comparison = {
+  key: string;
+  value: number | null;
+  percentChange: number | null;
+  label: string;
+  className: string;
+};
 
 export type BigNumberVizProps = {
   className?: string;
@@ -96,4 +116,17 @@ export type BigNumberVizProps = {
   formData?: BigNumberWithTrendlineFormData;
   refs: Refs;
   colorThresholdFormatters?: ColorFormatters;
+};
+
+export type BigNumberV2VizProps = {
+  width: number;
+  height: number;
+  bigNumber: number | null;
+  comparisons: BigNumberV2Comparison[];
+  headerFormatter: ValueFormatter;
+  comparisonValueFormatter: ValueFormatter;
+  percentFormatter: ValueFormatter;
+  headerFontSize: number;
+  subheaderFontSize: number;
+  onContextMenu?: (clientX: number, clientY: number) => void;
 };

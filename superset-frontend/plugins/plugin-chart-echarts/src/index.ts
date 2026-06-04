@@ -34,6 +34,7 @@ export { default as EchartsTreeChartPlugin } from './Tree';
 export { default as EchartsTreemapChartPlugin } from './Treemap';
 export {
   BigNumberChartPlugin,
+  BigNumberWithTrendlineV2ChartPlugin,
   BigNumberTotalChartPlugin,
   BigNumberPeriodOverPeriodChartPlugin,
 } from './BigNumber';

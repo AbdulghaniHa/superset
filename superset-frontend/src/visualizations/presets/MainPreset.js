@@ -34,7 +34,6 @@ import TableChartPlugin from '@superset-ui/plugin-chart-table';
 import { WordCloudChartPlugin } from '@superset-ui/plugin-chart-word-cloud';
 import WorldMapChartPlugin from '@superset-ui/legacy-plugin-chart-world-map';
 
-
 import {
   AreaChartPlugin,
   BarChartPlugin,
@@ -68,6 +67,7 @@ import {
   EchartsSunburstChartPlugin,
   EchartsBubbleChartPlugin,
   EchartsWaterfallChartPlugin,
+  BigNumberWithTrendlineV2ChartPlugin,
   BigNumberPeriodOverPeriodChartPlugin,
 } from '@superset-ui/plugin-chart-echarts';
 import {
@@ -80,8 +80,6 @@ import {
 import { PivotTableChartPlugin as PivotTableChartPluginV2 } from '@superset-ui/plugin-chart-pivot-table';
 import { HandlebarsChartPlugin } from '@superset-ui/plugin-chart-handlebars';
 import TimeTableChartPlugin from '../TimeTable';
-
-
 
 export default class MainPreset extends Preset {
   constructor() {
@@ -102,6 +100,9 @@ export default class MainPreset extends Preset {
         new AreaChartPlugin().configure({ key: 'area' }),
         new BarChartPlugin().configure({ key: 'bar' }),
         new BigNumberChartPlugin().configure({ key: 'big_number' }),
+        new BigNumberWithTrendlineV2ChartPlugin().configure({
+          key: 'big_number_v2',
+        }),
         new BigNumberTotalChartPlugin().configure({ key: 'big_number_total' }),
         new EchartsBoxPlotChartPlugin().configure({ key: 'box_plot' }),
         new BubbleChartPlugin().configure({ key: 'bubble' }),
