@@ -244,13 +244,13 @@ export default styled(BigNumberV2Viz)`
     .comparison-row.positive .comparison-detail,
     .comparison-row.positive .comparison-percentage,
     .comparison-row.positive .comparison-label {
-      color: ${theme.colors.success.base} !important;
+      color: #288760 !important;
     }
 
     .comparison-row.negative .comparison-detail,
     .comparison-row.negative .comparison-percentage,
     .comparison-row.negative .comparison-label {
-      color: ${theme.colors.error.base} !important;
+      color: #FF2E00 !important;
     }
   `}
 `;
