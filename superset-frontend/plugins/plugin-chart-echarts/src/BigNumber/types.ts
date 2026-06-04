@@ -119,6 +119,7 @@ export type BigNumberVizProps = {
 };
 
 export type BigNumberV2VizProps = {
+  className?: string;
   width: number;
   height: number;
   bigNumber: number | null;

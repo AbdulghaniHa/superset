@@ -174,7 +174,12 @@ class BigNumberV2Viz extends React.PureComponent<BigNumberV2VizProps> {
   }
 
   render() {
-    const { height, headerFontSize, subheaderFontSize } = this.props;
+    const {
+      className = '',
+      height,
+      headerFontSize,
+      subheaderFontSize,
+    } = this.props;
     const headerHeight = Math.ceil(headerFontSize * height);
     const comparisonHeight = Math.max(
       0,
@@ -182,7 +187,10 @@ class BigNumberV2Viz extends React.PureComponent<BigNumberV2VizProps> {
     );
 
     return (
-      <div className="superset-legacy-chart-big-number-v2" style={{ height }}>
+      <div
+        className={`superset-legacy-chart-big-number-v2 ${className}`}
+        style={{ height }}
+      >
         {this.renderHeader(headerHeight)}
         {this.renderComparisonRows(comparisonHeight)}
       </div>
