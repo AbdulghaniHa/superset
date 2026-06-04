@@ -142,7 +142,7 @@ class BigNumberV2Viz extends React.PureComponent<BigNumberV2VizProps> {
 
           return (
             <div
-              className="comparison-row"
+              className={`comparison-row ${comparison.className}`}
               key={comparison.key}
               style={{ height: rowHeight }}
             >
@@ -156,7 +156,10 @@ class BigNumberV2Viz extends React.PureComponent<BigNumberV2VizProps> {
                 className={`comparison-detail ${comparison.className}`}
                 style={{ fontSize: detailFontSize }}
               >
-                {detailText}
+                <span className="comparison-percentage">{percentText}</span>
+                {comparison.label && (
+                  <span className="comparison-label"> {comparison.label}</span>
+                )}
               </span>
             </div>
           );
@@ -225,6 +228,11 @@ export default styled(BigNumberV2Viz)`
       flex: 1 1 auto;
       min-width: 0;
       white-space: nowrap;
+    }
+
+    .comparison-percentage,
+    .comparison-label {
+      color: inherit;
     }
 
     .comparison-detail.positive {

@@ -20,7 +20,6 @@ import { t } from '@superset-ui/core';
 import {
   ControlPanelConfig,
   getStandardizedControls,
-  temporalColumnMixin,
 } from '@superset-ui/chart-controls';
 import { headerFontSize, subheaderFontSize } from '../sharedControls';
 
@@ -29,12 +28,7 @@ const config: ControlPanelConfig = {
     {
       label: t('Query'),
       expanded: true,
-      controlSetRows: [
-        ['metrics'],
-        ['x_axis'],
-        ['time_grain_sqla'],
-        ['adhoc_filters'],
-      ],
+      controlSetRows: [['metrics'], ['adhoc_filters']],
     },
     {
       label: t('Options'),
@@ -85,10 +79,6 @@ const config: ControlPanelConfig = {
   controlOverrides: {
     y_axis_format: {
       label: t('Number format'),
-    },
-    x_axis: {
-      label: t('TEMPORAL X-AXIS'),
-      ...temporalColumnMixin,
     },
   },
   formDataOverrides: formData => ({

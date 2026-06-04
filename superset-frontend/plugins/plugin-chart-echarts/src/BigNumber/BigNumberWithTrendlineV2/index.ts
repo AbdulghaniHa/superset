@@ -34,7 +34,7 @@ const metadata = {
     'Showcases one main KPI with two query-driven comparison values and calculated percentage deltas.',
   ),
   exampleGallery: [{ url: example }],
-  name: t('Big Number with Trendline V2'),
+  name: t('Big Number V2'),
   tags: [t('KPI'), t('Percentages'), t('Report'), t('Description'), t('Trend')],
   thumbnail,
   behaviors: [Behavior.DrillToDetail],
