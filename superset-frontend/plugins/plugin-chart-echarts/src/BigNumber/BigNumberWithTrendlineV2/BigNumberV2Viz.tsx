@@ -26,6 +26,7 @@ import {
 import { BigNumberV2VizProps } from '../types';
 
 const defaultNumberFormatter = getNumberFormatter();
+const DETAIL_FONT_SCALE = 0.85;
 
 // Matches the existing BigNumber renderer pattern for measuring dynamic text.
 // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
@@ -134,10 +135,14 @@ class BigNumberV2Viz extends React.PureComponent<BigNumberV2VizProps> {
           const detailFontSize = computeMaxFontSize({
             text: detailText,
             maxWidth: detailMaxWidth,
-            maxHeight: Math.ceil(rowHeight * subheaderFontSize * 6),
+            maxHeight: Math.ceil(rowHeight * subheaderFontSize * 5),
             className: 'comparison-detail',
             container,
           });
+          const scaledDetailFontSize = Math.max(
+            1,
+            Math.floor(detailFontSize * DETAIL_FONT_SCALE),
+          );
           container.remove();
 
           return (
@@ -154,7 +159,7 @@ class BigNumberV2Viz extends React.PureComponent<BigNumberV2VizProps> {
               </span>
               <span
                 className={`comparison-detail ${comparison.className}`}
-                style={{ fontSize: detailFontSize }}
+                style={{ fontSize: scaledDetailFontSize }}
               >
                 <span className="comparison-percentage">{percentText}</span>
                 {comparison.label && (
@@ -211,7 +216,7 @@ export default styled(BigNumberV2Viz)`
     .comparison-row {
       align-items: center;
       display: flex;
-      gap: ${theme.gridUnit * 4}px;
+      column-gap: ${theme.gridUnit * 6}px;
       line-height: 1;
       min-height: ${theme.gridUnit * 8}px;
       width: 100%;
@@ -219,7 +224,8 @@ export default styled(BigNumberV2Viz)`
 
     .comparison-value {
       color: ${theme.colors.grayscale.dark2};
-      flex: 0 0 32%;
+      flex: 0 0 auto;
+      margin-right: ${theme.gridUnit * 3}px;
       white-space: nowrap;
     }
 
@@ -235,12 +241,16 @@ export default styled(BigNumberV2Viz)`
       color: inherit;
     }
 
-    .comparison-detail.positive {
-      color: ${theme.colors.success.base};
+    .comparison-row.positive .comparison-detail,
+    .comparison-row.positive .comparison-percentage,
+    .comparison-row.positive .comparison-label {
+      color: ${theme.colors.success.base} !important;
     }
 
-    .comparison-detail.negative {
-      color: ${theme.colors.error.base};
+    .comparison-row.negative .comparison-detail,
+    .comparison-row.negative .comparison-percentage,
+    .comparison-row.negative .comparison-label {
+      color: ${theme.colors.error.base} !important;
     }
   `}
 `;
