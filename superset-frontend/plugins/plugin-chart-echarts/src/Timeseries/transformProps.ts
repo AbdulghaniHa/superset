@@ -521,16 +521,6 @@ export default function transformProps(
     yAxis.inverse = true;
   }
 
-  // eslint-disable-next-line no-console -- trace initial dataZoom range from chart props
-  console.log('[Timeseries transformProps] Building dataZoom with options', {
-    zoomable,
-    dataZoomDefaultLastNDays,
-    parsedLastNDays: parseDataZoomLastNDays(dataZoomDefaultLastNDays),
-    timeGrainSqla,
-    isHorizontal,
-    xAxisType,
-  });
-
   const initialDataZoomRange = computeInitialDataZoomRange(
     seriesForDataZoomExtent,
     xAxisType,

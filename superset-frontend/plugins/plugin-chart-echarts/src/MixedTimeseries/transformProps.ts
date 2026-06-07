@@ -517,18 +517,6 @@ export default function transformProps(
   const { setDataMask = () => {}, onContextMenu } = hooks;
   const alignTicks = yAxisIndex !== yAxisIndexB;
 
-  // eslint-disable-next-line no-console -- trace initial dataZoom range from chart props
-  console.log(
-    '[MixedTimeseries transformProps] Building dataZoom with options',
-    {
-      zoomable,
-      dataZoomDefaultLastNDays,
-      parsedLastNDays: parseDataZoomLastNDays(dataZoomDefaultLastNDays),
-      timeGrainSqla,
-      xAxisType,
-    },
-  );
-
   const initialDataZoomRange = computeInitialDataZoomRange(
     seriesForDataZoomExtent,
     xAxisType,
