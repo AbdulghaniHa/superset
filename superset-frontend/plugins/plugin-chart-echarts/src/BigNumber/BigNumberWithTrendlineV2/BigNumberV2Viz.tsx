@@ -26,7 +26,7 @@ import {
 import { BigNumberV2VizProps } from '../types';
 
 const defaultNumberFormatter = getNumberFormatter();
-const DETAIL_FONT_SCALE = 0.85;
+const DETAIL_FONT_SCALE = 0.95;
 
 // Matches the existing BigNumber renderer pattern for measuring dynamic text.
 // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
@@ -224,7 +224,7 @@ export default styled(BigNumberV2Viz)`
     .comparison-row {
       align-items: center;
       display: flex;
-      column-gap: ${theme.gridUnit * 6}px;
+      column-gap: ${theme.gridUnit * 2}px;
       line-height: 1;
       min-height: ${theme.gridUnit * 8}px;
       width: 100%;
