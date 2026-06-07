@@ -51,6 +51,7 @@ export type BigNumberWithTrendlineFormData = BigNumberTotalFormData & {
 
 export type BigNumberWithTrendlineV2FormData = BigNumberTotalFormData & {
   metrics?: QueryFormMetric[];
+  percentageColor?: 'default' | 'revert';
   targetLabel?: string;
   secondaryTargetLabel?: string;
 };

@@ -34,6 +34,7 @@ const formData = {
   secondaryTargetLabel: 'of 6 month ma',
   viz_type: 'big_number_v2',
   yAxisFormat: '.3s',
+  percentageColor: 'default' as const,
   datasource: 'test_datasource',
 };
 
@@ -44,6 +45,7 @@ const rawFormData: BigNumberWithTrendlineV2FormData = {
   secondary_target_label: 'of 6 month ma',
   viz_type: 'big_number_v2',
   y_axis_format: '.3s',
+  percentage_color: 'default',
 };
 
 function generateProps(
@@ -158,6 +160,31 @@ describe('BigNumberWithTrendlineV2', () => {
       expect(transformed.bigNumber).toStrictEqual(172);
       expect(transformed.comparisons[0].value).toStrictEqual(290);
       expect(transformed.comparisons[1].value).toStrictEqual(150);
+    });
+
+    it('reverts percentage colors when configured', () => {
+      const transformed = transformProps(
+        generateProps(
+          [
+            {
+              current: 172,
+              target: 290,
+              six_month_ma: 150,
+            },
+          ],
+          {
+            percentageColor: 'revert',
+            percentage_color: 'revert',
+          },
+        ),
+      );
+
+      expect(transformed.comparisons[0]).toMatchObject({
+        className: 'positive',
+      });
+      expect(transformed.comparisons[1]).toMatchObject({
+        className: 'negative',
+      });
     });
   });
 });

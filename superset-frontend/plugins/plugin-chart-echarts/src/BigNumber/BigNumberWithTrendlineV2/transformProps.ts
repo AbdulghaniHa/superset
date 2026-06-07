@@ -48,15 +48,18 @@ function getSortValue(value: unknown) {
   return 0;
 }
 
-function getClassName(percentChange: number | null) {
+function getClassName(
+  percentChange: number | null,
+  percentageColor: 'default' | 'revert' = 'default',
+) {
   if (percentChange === null) {
     return '';
   }
   if (percentChange > 0) {
-    return 'positive';
+    return percentageColor === 'revert' ? 'negative' : 'positive';
   }
   if (percentChange < 0) {
-    return 'negative';
+    return percentageColor === 'revert' ? 'positive' : 'negative';
   }
   return '';
 }
@@ -86,6 +89,7 @@ export default function transformProps(
   const {
     headerFontSize,
     metrics = [],
+    percentageColor = 'default',
     targetLabel = '',
     secondaryTargetLabel = '',
     subheaderFontSize,
@@ -149,7 +153,7 @@ export default function transformProps(
       return {
         ...comparison,
         percentChange,
-        className: getClassName(percentChange),
+        className: getClassName(percentChange, percentageColor),
       };
     },
   );

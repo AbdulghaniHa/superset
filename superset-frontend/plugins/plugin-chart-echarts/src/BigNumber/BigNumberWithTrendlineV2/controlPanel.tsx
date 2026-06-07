@@ -71,6 +71,25 @@ const config: ControlPanelConfig = {
       controlSetRows: [
         [headerFontSize],
         [subheaderFontSize],
+        [
+          {
+            name: 'percentage_color',
+            config: {
+              type: 'SelectControl',
+              label: t('Percentage color'),
+              renderTrigger: true,
+              clearable: false,
+              default: 'default',
+              choices: [
+                ['default', t('Default')],
+                ['revert', t('Revert')],
+              ],
+              description: t(
+                'Revert makes positive percentage deltas red and negative percentage deltas green.',
+              ),
+            },
+          },
+        ],
         ['y_axis_format'],
         ['currency_format'],
       ],
