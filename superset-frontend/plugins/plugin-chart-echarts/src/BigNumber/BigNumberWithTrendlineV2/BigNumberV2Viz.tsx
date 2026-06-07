@@ -233,7 +233,7 @@ export default styled(BigNumberV2Viz)`
     .comparison-value {
       color: ${theme.colors.grayscale.dark2};
       flex: 0 0 auto;
-      margin-right: ${theme.gridUnit * 3}px;
+      // margin-right: ${theme.gridUnit * 3}px;
       white-space: nowrap;
     }
 
