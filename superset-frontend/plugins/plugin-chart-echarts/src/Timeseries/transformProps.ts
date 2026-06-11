@@ -53,7 +53,12 @@ import {
   TimeseriesChartTransformedProps,
 } from './types';
 import { DEFAULT_FORM_DATA } from './constants';
-import { ForecastSeriesEnum, ForecastValue, Refs } from '../types';
+import {
+  EchartsTimeseriesSeriesType,
+  ForecastSeriesEnum,
+  ForecastValue,
+  Refs,
+} from '../types';
 import { parseAxisBound } from '../utils/controls';
 import {
   calculateLowerLogTick,
@@ -232,7 +237,12 @@ export default function transformProps(
   const [rawSeries, sortedTotalValues, minPositiveValue] = extractSeries(
     rebasedData,
     {
-      fillNeighborValue: stack && !forecastEnabled ? 0 : undefined,
+      fillNeighborValue:
+        stack &&
+        !forecastEnabled &&
+        seriesType !== EchartsTimeseriesSeriesType.Bar
+          ? 0
+          : undefined,
       xAxis: xAxisLabel,
       extraMetricLabels,
       stack,

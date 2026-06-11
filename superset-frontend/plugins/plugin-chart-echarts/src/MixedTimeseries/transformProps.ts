@@ -224,12 +224,14 @@ export default function transformProps(
 
   const rebasedDataA = rebaseForecastDatum(data1, verboseMap);
   const [rawSeriesA] = extractSeries(rebasedDataA, {
-    fillNeighborValue: stack ? 0 : undefined,
+    fillNeighborValue:
+      stack && seriesType !== EchartsTimeseriesSeriesType.Bar ? 0 : undefined,
     xAxis: xAxisLabel,
   });
   const rebasedDataB = rebaseForecastDatum(data2, verboseMap);
   const [rawSeriesB] = extractSeries(rebasedDataB, {
-    fillNeighborValue: stackB ? 0 : undefined,
+    fillNeighborValue:
+      stackB && seriesTypeB !== EchartsTimeseriesSeriesType.Bar ? 0 : undefined,
     xAxis: xAxisLabel,
   });
 

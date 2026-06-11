@@ -309,6 +309,9 @@ export function transformSeries(
         const numericValue = isHorizontal ? value[0] : value[1];
         const isSelectedLegend = !legendState || legendState[seriesName];
         const isAreaExpand = stack === StackControlsValue.Expand;
+        if (numericValue === null || numericValue === undefined) {
+          return '';
+        }
         if (!formatter) {
           return numericValue;
         }
