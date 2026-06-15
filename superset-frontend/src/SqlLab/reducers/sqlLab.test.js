@@ -187,6 +187,17 @@ describe('sqlLabReducer', () => {
       expect(newState.unsavedQueryEditor.queryLimit).toBe(queryLimit);
       expect(newState.unsavedQueryEditor.id).toBe(qe.id);
     });
+    it('should not fail while setting previewLimit', () => {
+      const previewLimit = 10;
+      const action = {
+        type: actions.QUERY_EDITOR_SET_PREVIEW_LIMIT,
+        queryEditor: qe,
+        previewLimit,
+      };
+      newState = sqlLabReducer(newState, action);
+      expect(newState.unsavedQueryEditor.previewLimit).toBe(previewLimit);
+      expect(newState.unsavedQueryEditor.id).toBe(qe.id);
+    });
     it('should set selectedText', () => {
       const selectedText = 'TEST';
       const action = {

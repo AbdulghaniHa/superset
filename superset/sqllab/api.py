@@ -432,8 +432,12 @@ class SqlLabRestApi(BaseSupersetApi):
             execution_context, query_dao
         )
         execution_context_convertor = ExecutionContextConvertor()
+        display_max_row = int(config.get("DISPLAY_MAX_ROW"))
         execution_context_convertor.set_max_row_in_display(
-            int(config.get("DISPLAY_MAX_ROW"))
+            min(
+                execution_context.preview_limit or display_max_row,
+                display_max_row,
+            )
         )
         return ExecuteSqlCommand(
             execution_context,

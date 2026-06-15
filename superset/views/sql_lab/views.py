@@ -99,6 +99,12 @@ class TabStateView(BaseSupersetView):
             hide_left_bar=query_editor.get("hideLeftBar"),
             saved_query_id=query_editor.get("remoteId"),
             template_params=query_editor.get("templateParams"),
+            extra_json=json.dumps(
+                {
+                    "previewLimit": query_editor.get("previewLimit"),
+                    **(query_editor.get("extra_json") or {}),
+                }
+            ),
         )
         (
             db.session.query(TabState)

@@ -28,9 +28,14 @@ import type { TableMetaData } from 'src/hooks/apiResources';
 
 export type QueryButtonProps = DropdownButtonProps | ButtonProps;
 
+export type SqlLabQuery = QueryResponse & {
+  inLocalStorage?: boolean;
+  previewLimit?: number;
+};
+
 // Object as Dictionary (associative array) with Query id as the key and type Query as the value
 export type QueryDictionary = {
-  [id: string]: QueryResponse;
+  [id: string]: SqlLabQuery;
 };
 
 export enum QueryEditorVersion {
@@ -59,6 +64,7 @@ export interface QueryEditor {
   templateParams?: string;
   selectedText?: string;
   queryLimit?: number;
+  previewLimit?: number;
   description?: string;
   loaded?: boolean;
   inLocalStorage?: boolean;
@@ -98,7 +104,7 @@ export type SqlLabRootState = {
     databases: Record<string, any>;
     dbConnect: boolean;
     offline: boolean;
-    queries: Record<string, QueryResponse & { inLocalStorage?: boolean }>;
+    queries: Record<string, SqlLabQuery>;
     queryEditors: QueryEditor[];
     tabHistory: string[]; // default is activeTab ? [activeTab.id.toString()] : []
     tables: Table[];

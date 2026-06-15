@@ -166,6 +166,7 @@ const ResultSet = ({
         'schema',
         'rows',
         'queryLimit',
+        'previewLimit',
         'limitingFactor',
         'trackingUrl',
         'state',
@@ -212,15 +213,20 @@ const ResultSet = ({
   };
 
   const prevQuery = usePrevious(query);
+  const prevDisplayLimit = usePrevious(displayLimit);
   useEffect(() => {
     if (cache && query.cached && query?.results?.data?.length > 0) {
       setCachedData(query.results.data);
       dispatch(clearQueryResults(query));
     }
-    if (query.resultsKey && query.resultsKey !== prevQuery?.resultsKey) {
+    if (
+      query.resultsKey &&
+      (query.resultsKey !== prevQuery?.resultsKey ||
+        displayLimit !== prevDisplayLimit)
+    ) {
       fetchResults(query);
     }
-  }, [query, cache]);
+  }, [query, cache, displayLimit, prevDisplayLimit]);
 
   const calculateAlertRefHeight = (alertElement: HTMLElement | null) => {
     if (alertElement) {
@@ -344,7 +350,7 @@ const ResultSet = ({
   };
 
   const renderRowsReturned = (alertMessage: boolean) => {
-    const { results, rows, queryLimit, limitingFactor } = query;
+    const { results, rows, queryLimit, previewLimit, limitingFactor } = query;
     let limitMessage = '';
     const limitReached = results?.displayLimitReached;
     const limit = queryLimit || results.query.limit;
@@ -417,9 +423,14 @@ const ResultSet = ({
                 onClose={() => setAlertIsOpen(false)}
                 message={t('%(rows)d rows returned', { rows: rowsCount })}
                 description={
-                  isAdmin
-                    ? displayMaxRowsReachedMessage.withAdmin
-                    : displayMaxRowsReachedMessage.withoutAdmin
+                  previewLimit
+                    ? t(
+                        'The number of rows displayed is limited to %(rows)d by the preview dropdown. Download to csv to see more rows up to the %(limit)d limit.',
+                        { rows: rowsCount, limit },
+                      )
+                    : isAdmin
+                      ? displayMaxRowsReachedMessage.withAdmin
+                      : displayMaxRowsReachedMessage.withoutAdmin
                 }
               />
             </div>

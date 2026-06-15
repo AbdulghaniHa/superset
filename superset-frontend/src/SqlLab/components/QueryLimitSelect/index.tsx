@@ -22,13 +22,17 @@ import { styled, useTheme, t } from '@superset-ui/core';
 import { AntdDropdown } from 'src/components';
 import { Menu } from 'src/components/Menu';
 import Icons from 'src/components/Icons';
-import { queryEditorSetQueryLimit } from 'src/SqlLab/actions/sqlLab';
+import {
+  queryEditorSetPreviewLimit,
+  queryEditorSetQueryLimit,
+} from 'src/SqlLab/actions/sqlLab';
 import useQueryEditor from 'src/SqlLab/hooks/useQueryEditor';
 
 export interface QueryLimitSelectProps {
   queryEditorId: string;
   maxRow: number;
-  defaultQueryLimit: number;
+  defaultLimit: number;
+  limitType?: 'query' | 'preview';
 }
 
 export function convertToNumWithSpaces(num: number) {
@@ -84,27 +88,37 @@ function renderQueryLimit(
 const QueryLimitSelect = ({
   queryEditorId,
   maxRow,
-  defaultQueryLimit,
+  defaultLimit,
+  limitType = 'query',
 }: QueryLimitSelectProps) => {
   const theme = useTheme();
   const dispatch = useDispatch();
 
-  const queryEditor = useQueryEditor(queryEditorId, ['id', 'queryLimit']);
-  const queryLimit = queryEditor.queryLimit || defaultQueryLimit;
-  const setQueryLimit = (updatedQueryLimit: number) =>
-    dispatch(queryEditorSetQueryLimit(queryEditor, updatedQueryLimit));
+  const queryEditor = useQueryEditor(queryEditorId, [
+    'id',
+    limitType === 'preview' ? 'previewLimit' : 'queryLimit',
+  ]);
+  const limit =
+    (limitType === 'preview'
+      ? queryEditor.previewLimit
+      : queryEditor.queryLimit) || defaultLimit;
+  const setLimit = (updatedLimit: number) => {
+    if (limitType === 'preview') {
+      dispatch(queryEditorSetPreviewLimit(queryEditor, updatedLimit));
+    } else {
+      dispatch(queryEditorSetQueryLimit(queryEditor, updatedLimit));
+    }
+  };
 
   return (
     <LimitSelectStyled>
       <AntdDropdown
-        overlay={renderQueryLimit(maxRow, setQueryLimit)}
+        overlay={renderQueryLimit(maxRow, setLimit)}
         trigger={['click']}
       >
         <button type="button" onClick={e => e.preventDefault()}>
-          <span>{t('LIMIT')}:</span>
-          <span className="limitDropdown">
-            {convertToNumWithSpaces(queryLimit)}
-          </span>
+          <span>{limitType === 'preview' ? t('PREVIEW') : t('LIMIT')}:</span>
+          <span className="limitDropdown">{convertToNumWithSpaces(limit)}</span>
           <Icons.TriangleDown iconColor={theme.colors.grayscale.base} />
         </button>
       </AntdDropdown>

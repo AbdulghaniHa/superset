@@ -113,6 +113,7 @@ export default function sqlLabReducer(state = {}, action) {
         autorun: true,
         sql: action.query.sql,
         queryLimit: action.query.queryLimit,
+        previewLimit: action.query.previewLimit,
         maxRow: action.query.maxRow,
       };
       const stateWithoutUnsavedState = {
@@ -563,6 +564,18 @@ export default function sqlLabReducer(state = {}, action) {
           state,
           {
             queryLimit: action.queryLimit,
+          },
+          action.queryEditor.id,
+        ),
+      };
+    },
+    [actions.QUERY_EDITOR_SET_PREVIEW_LIMIT]() {
+      return {
+        ...state,
+        ...alterUnsavedQueryEditorState(
+          state,
+          {
+            previewLimit: action.previewLimit,
           },
           action.queryEditor.id,
         ),

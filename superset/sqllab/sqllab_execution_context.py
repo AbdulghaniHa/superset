@@ -49,6 +49,7 @@ class SqlJsonExecutionContext:  # pylint: disable=too-many-instance-attributes
     template_params: dict[str, Any]
     async_flag: bool
     limit: int
+    preview_limit: int
     status: str
     client_id: str
     client_id_or_short_id: str
@@ -78,6 +79,7 @@ class SqlJsonExecutionContext:  # pylint: disable=too-many-instance-attributes
         self.template_params = self._get_template_params(query_params)
         self.async_flag = cast(bool, query_params.get("runAsync"))
         self.limit = self._get_limit_param(query_params)
+        self.preview_limit = self._get_preview_limit_param(query_params)
         self.status = cast(str, query_params.get("status"))
         if cast(bool, query_params.get("select_as_cta")):
             self.create_table_as_select = CreateTableAsSelect.create_from(query_params)
@@ -111,6 +113,17 @@ class SqlJsonExecutionContext:  # pylint: disable=too-many-instance-attributes
             )
             limit = 0
         return limit
+
+    @staticmethod
+    def _get_preview_limit_param(query_params: dict[str, Any]) -> int:
+        preview_limit = query_params.get("previewLimit") or 0
+        if preview_limit < 0:
+            logger.warning(
+                "Invalid preview limit of %i specified. Defaulting to max display.",
+                preview_limit,
+            )
+            preview_limit = 0
+        return preview_limit
 
     def is_run_asynchronous(self) -> bool:
         return self.async_flag

@@ -244,31 +244,39 @@ const SqlEditor: React.FC<Props> = ({
   const theme = useTheme();
   const dispatch = useDispatch();
 
-  const { database, latestQuery, hideLeftBar, currentQueryEditorId } =
-    useSelector<
-      SqlLabRootState,
-      {
-        database?: DatabaseObject;
-        latestQuery?: QueryResponse;
-        hideLeftBar?: boolean;
-        currentQueryEditorId: QueryEditor['id'];
-      }
-    >(({ sqlLab: { unsavedQueryEditor, databases, queries, tabHistory } }) => {
-      let { dbId, latestQueryId, hideLeftBar } = queryEditor;
-      if (unsavedQueryEditor?.id === queryEditor.id) {
-        dbId = unsavedQueryEditor.dbId || dbId;
-        latestQueryId = unsavedQueryEditor.latestQueryId || latestQueryId;
-        hideLeftBar = isBoolean(unsavedQueryEditor.hideLeftBar)
-          ? unsavedQueryEditor.hideLeftBar
-          : hideLeftBar;
-      }
-      return {
-        database: databases[dbId || ''],
-        latestQuery: queries[latestQueryId || ''],
-        hideLeftBar,
-        currentQueryEditorId: tabHistory.slice(-1)[0],
-      };
-    }, shallowEqual);
+  const {
+    database,
+    latestQuery,
+    hideLeftBar,
+    currentQueryEditorId,
+    previewLimit,
+  } = useSelector<
+    SqlLabRootState,
+    {
+      database?: DatabaseObject;
+      latestQuery?: QueryResponse;
+      hideLeftBar?: boolean;
+      currentQueryEditorId: QueryEditor['id'];
+      previewLimit?: number;
+    }
+  >(({ sqlLab: { unsavedQueryEditor, databases, queries, tabHistory } }) => {
+    let { dbId, latestQueryId, hideLeftBar, previewLimit } = queryEditor;
+    if (unsavedQueryEditor?.id === queryEditor.id) {
+      dbId = unsavedQueryEditor.dbId || dbId;
+      latestQueryId = unsavedQueryEditor.latestQueryId || latestQueryId;
+      previewLimit = unsavedQueryEditor.previewLimit || previewLimit;
+      hideLeftBar = isBoolean(unsavedQueryEditor.hideLeftBar)
+        ? unsavedQueryEditor.hideLeftBar
+        : hideLeftBar;
+    }
+    return {
+      database: databases[dbId || ''],
+      latestQuery: queries[latestQueryId || ''],
+      hideLeftBar,
+      currentQueryEditorId: tabHistory.slice(-1)[0],
+      previewLimit,
+    };
+  }, shallowEqual);
 
   const isActive = currentQueryEditorId === queryEditor.id;
   const [height, setHeight] = useState(0);
@@ -303,6 +311,7 @@ const SqlEditor: React.FC<Props> = ({
           database,
           queryEditor,
           defaultQueryLimit,
+          displayLimit,
           ctasArg ? ctas : '',
           ctasArg,
           ctas_method,
@@ -310,7 +319,7 @@ const SqlEditor: React.FC<Props> = ({
       );
       dispatch(setActiveSouthPaneTab('Results'));
     },
-    [ctas, database, defaultQueryLimit, dispatch, queryEditor],
+    [ctas, database, defaultQueryLimit, displayLimit, dispatch, queryEditor],
   );
 
   const formatCurrentQuery = useCallback(() => {
@@ -727,7 +736,15 @@ const SqlEditor: React.FC<Props> = ({
             <QueryLimitSelect
               queryEditorId={queryEditor.id}
               maxRow={maxRow}
-              defaultQueryLimit={defaultQueryLimit}
+              defaultLimit={defaultQueryLimit}
+            />
+          </span>
+          <span>
+            <QueryLimitSelect
+              queryEditorId={queryEditor.id}
+              maxRow={displayLimit}
+              defaultLimit={displayLimit}
+              limitType="preview"
             />
           </span>
           {latestQuery && (
@@ -807,7 +824,7 @@ const SqlEditor: React.FC<Props> = ({
           queryEditorId={queryEditor.id}
           latestQueryId={latestQuery?.id}
           height={southPaneHeight}
-          displayLimit={displayLimit}
+          displayLimit={previewLimit || displayLimit}
           defaultQueryLimit={defaultQueryLimit}
         />
       </Split>

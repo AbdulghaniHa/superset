@@ -62,6 +62,7 @@ export default function getInitialState({
     autorun: false,
     dbId: common.conf.SQLLAB_DEFAULT_DBID,
     queryLimit: common.conf.DEFAULT_SQLLAB_LIMIT,
+    previewLimit: common.conf.DISPLAY_MAX_ROW,
     hideLeftBar: false,
     remoteId: null,
     cursorPosition: { row: 0, column: 0 },
@@ -91,6 +92,7 @@ export default function getInitialState({
         dbId: activeTab.database_id,
         schema: activeTab.schema,
         queryLimit: activeTab.query_limit,
+        previewLimit: activeTab.extra_json?.previewLimit,
         hideLeftBar: activeTab.hide_left_bar,
         updatedAt: activeTab.extra_json?.updatedAt,
       };

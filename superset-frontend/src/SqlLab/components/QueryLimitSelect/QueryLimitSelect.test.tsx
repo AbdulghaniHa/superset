@@ -46,7 +46,7 @@ const setup = (props?: Partial<QueryLimitSelectProps>, store?: Store) =>
     <QueryLimitSelect
       queryEditorId={defaultQueryEditor.id}
       maxRow={100000}
-      defaultQueryLimit={defaultQueryLimit}
+      defaultLimit={defaultQueryLimit}
       {...props}
     />,
     {
@@ -184,6 +184,36 @@ describe('QueryLimitSelect', () => {
         {
           type: 'QUERY_EDITOR_SET_QUERY_LIMIT',
           queryLimit: 100,
+          queryEditor: {
+            id: defaultQueryEditor.id,
+          },
+        },
+      ]),
+    );
+  });
+
+  it('dispatches QUERY_EDITOR_SET_PREVIEW_LIMIT action in preview mode', async () => {
+    const store = mockStore(initialState);
+    const expectedIndex = 0;
+    const { baseElement, getAllByRole, getByRole } = setup(
+      { limitType: 'preview' },
+      store,
+    );
+    const dropdown = baseElement.getElementsByClassName(
+      'ant-dropdown-trigger',
+    )[0];
+
+    userEvent.click(dropdown);
+    await waitFor(() => expect(getByRole('menu')).toBeInTheDocument());
+
+    const menu = getAllByRole('menuitem')[expectedIndex];
+    expect(store.getActions()).toEqual([]);
+    fireEvent.click(menu);
+    await waitFor(() =>
+      expect(store.getActions()).toEqual([
+        {
+          type: 'QUERY_EDITOR_SET_PREVIEW_LIMIT',
+          previewLimit: 10,
           queryEditor: {
             id: defaultQueryEditor.id,
           },

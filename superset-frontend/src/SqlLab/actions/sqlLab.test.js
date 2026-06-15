@@ -423,6 +423,7 @@ describe('async actions', () => {
             autorun: true,
             sql: 'SELECT * FROM something',
             queryLimit: undefined,
+            previewLimit: undefined,
             maxRow: undefined,
             id: 'abcd',
             templateParams: undefined,
@@ -486,6 +487,9 @@ describe('async actions', () => {
               queryLimit:
                 defaultQueryEditor.queryLimit ||
                 initialState.common.conf.DEFAULT_SQLLAB_LIMIT,
+              previewLimit:
+                defaultQueryEditor.previewLimit ||
+                initialState.common.conf.DISPLAY_MAX_ROW,
             },
           },
         ];
@@ -717,6 +721,26 @@ describe('async actions', () => {
         ];
         store.dispatch(
           actions.queryEditorSetQueryLimit(queryEditor, queryLimit),
+        );
+        expect(store.getActions()).toEqual(expectedActions);
+      });
+    });
+
+    describe('queryEditorSetPreviewLimit', () => {
+      it('updates the tab state in the backend', () => {
+        expect.assertions(1);
+
+        const previewLimit = 10;
+        const store = mockStore({});
+        const expectedActions = [
+          {
+            type: actions.QUERY_EDITOR_SET_PREVIEW_LIMIT,
+            queryEditor,
+            previewLimit,
+          },
+        ];
+        store.dispatch(
+          actions.queryEditorSetPreviewLimit(queryEditor, previewLimit),
         );
         expect(store.getActions()).toEqual(expectedActions);
       });

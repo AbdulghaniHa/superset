@@ -62,6 +62,7 @@ export const QUERY_EDITOR_SET_SQL = 'QUERY_EDITOR_SET_SQL';
 export const QUERY_EDITOR_SET_CURSOR_POSITION =
   'QUERY_EDITOR_SET_CURSOR_POSITION';
 export const QUERY_EDITOR_SET_QUERY_LIMIT = 'QUERY_EDITOR_SET_QUERY_LIMIT';
+export const QUERY_EDITOR_SET_PREVIEW_LIMIT = 'QUERY_EDITOR_SET_PREVIEW_LIMIT';
 export const QUERY_EDITOR_SET_TEMPLATE_PARAMS =
   'QUERY_EDITOR_SET_TEMPLATE_PARAMS';
 export const QUERY_EDITOR_SET_SELECTED_TEXT = 'QUERY_EDITOR_SET_SELECTED_TEXT';
@@ -335,6 +336,7 @@ export function runQuery(query) {
       ctas_method: query.ctas_method,
       templateParams: query.templateParams,
       queryLimit: query.queryLimit,
+      previewLimit: query.previewLimit,
       expand_data: true,
     };
 
@@ -370,6 +372,7 @@ export function runQueryFromSqlEditor(
   database,
   queryEditor,
   defaultQueryLimit,
+  defaultPreviewLimit,
   tempTable,
   ctas,
   ctasMethod,
@@ -385,6 +388,7 @@ export function runQueryFromSqlEditor(
       tempTable,
       templateParams: qe.templateParams,
       queryLimit: qe.queryLimit || defaultQueryLimit,
+      previewLimit: qe.previewLimit || defaultPreviewLimit,
       runAsync: database ? database.allow_run_async : false,
       ctas,
       ctas_method: ctasMethod,
@@ -556,7 +560,7 @@ export function addNewQueryEditor() {
     );
     const dbIds = Object.values(databases).map(database => database.id);
     const firstDbId = dbIds.length > 0 ? Math.min(...dbIds) : undefined;
-    const { dbId, schema, queryLimit, autorun } = {
+    const { dbId, schema, queryLimit, previewLimit, autorun } = {
       ...queryEditors[0],
       ...activeQueryEditor,
       ...(unsavedQueryEditor.id === activeQueryEditor?.id &&
@@ -582,6 +586,7 @@ export function addNewQueryEditor() {
         autorun: autorun ?? false,
         sql: `${warning}SELECT ...`,
         queryLimit: queryLimit || common.conf.DEFAULT_SQLLAB_LIMIT,
+        previewLimit: previewLimit || common.conf.DISPLAY_MAX_ROW,
         name,
       }),
     );
@@ -604,6 +609,7 @@ export function cloneQueryToNewTab(query, autorun) {
       autorun,
       sql: query.sql,
       queryLimit: sourceQueryEditor.queryLimit,
+      previewLimit: sourceQueryEditor.previewLimit,
       maxRow: sourceQueryEditor.maxRow,
       templateParams: sourceQueryEditor.templateParams,
     };
@@ -696,6 +702,7 @@ export function switchQueryEditor(queryEditor, displayLimit) {
             templateParams: json.template_params,
             schema: json.schema,
             queryLimit: json.query_limit,
+            previewLimit: json.extra_json?.previewLimit,
             remoteId: json.saved_query?.id,
             hideLeftBar: json.hide_left_bar,
           };
@@ -934,6 +941,14 @@ export function queryEditorSetQueryLimit(queryEditor, queryLimit) {
   };
 }
 
+export function queryEditorSetPreviewLimit(queryEditor, previewLimit) {
+  return {
+    type: QUERY_EDITOR_SET_PREVIEW_LIMIT,
+    queryEditor,
+    previewLimit,
+  };
+}
+
 export function queryEditorSetTemplateParams(queryEditor, templateParams) {
   return {
     type: QUERY_EDITOR_SET_TEMPLATE_PARAMS,
@@ -1066,6 +1081,7 @@ export function reFetchQueryResults(query) {
       runAsync: false,
       ctas: false,
       queryLimit: query.queryLimit,
+      previewLimit: query.previewLimit,
       isDataPreview: query.isDataPreview,
     };
     dispatch(runQuery(newQuery));

@@ -23,6 +23,7 @@ class SqlJsonPayloadSchema(Schema):
     sql = fields.String(required=True)
     client_id = fields.String(allow_none=True)
     queryLimit = fields.Integer(allow_none=True)
+    previewLimit = fields.Integer(allow_none=True)
     sql_editor_id = fields.String(allow_none=True)
     schema = fields.String(allow_none=True)
     tab = fields.String(allow_none=True)

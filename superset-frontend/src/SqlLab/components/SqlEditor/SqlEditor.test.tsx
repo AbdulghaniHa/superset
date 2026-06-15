@@ -278,6 +278,12 @@ describe('SqlEditor', () => {
     expect(await findByText('10 000')).toBeInTheDocument();
   });
 
+  it('render a Preview Dropdown', async () => {
+    const { findByText } = setup(mockedProps, store);
+    fireEvent.click(await findByText('PREVIEW:'));
+    expect(await findByText('100')).toBeInTheDocument();
+  });
+
   it('renders an Extension if provided', async () => {
     const extensionsRegistry = getExtensionsRegistry();
 

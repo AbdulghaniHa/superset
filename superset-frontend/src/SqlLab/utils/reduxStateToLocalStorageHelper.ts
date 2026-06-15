@@ -37,6 +37,7 @@ const PERSISTENT_QUERY_EDITOR_KEYS = new Set([
   'id',
   'latestQueryId',
   'northPercent',
+  'previewLimit',
   'queryLimit',
   'schema',
   'selectedText',
