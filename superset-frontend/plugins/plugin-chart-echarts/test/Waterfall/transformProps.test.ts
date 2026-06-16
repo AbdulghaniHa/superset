@@ -94,4 +94,32 @@ describe('Waterfall tranformProps', () => {
       ['-', '-', 13, '-', '-', 8],
     ]);
   });
+
+  it('should use custom total label for the total x-axis tick', () => {
+    const chartProps = new ChartProps({
+      formData: { ...formData, totalLabel: 'Remaining Users' },
+      width: 800,
+      height: 600,
+      queriesData: [
+        {
+          data,
+        },
+      ],
+      theme: supersetTheme,
+    });
+    const transformedProps = transformProps(
+      chartProps as unknown as EchartsWaterfallChartProps,
+    );
+    const { xAxis } = transformedProps.echartOptions as {
+      xAxis: {
+        data: string[];
+        axisLabel: { formatter: (value: string, index: number) => string };
+      };
+    };
+
+    expect(xAxis.data[xAxis.data.length - 1]).toBe('Total');
+    expect(xAxis.axisLabel.formatter('Total', xAxis.data.length - 1)).toBe(
+      'Remaining Users',
+    );
+  });
 });

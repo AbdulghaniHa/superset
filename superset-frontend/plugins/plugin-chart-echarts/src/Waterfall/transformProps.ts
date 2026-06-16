@@ -47,12 +47,14 @@ function formatTooltip({
   theme,
   params,
   breakdownName,
+  totalLabel,
   defaultFormatter,
   xAxisFormatter,
 }: {
   theme: SupersetTheme;
   params: ICallbackDataParams[];
   breakdownName?: string;
+  totalLabel: string;
   defaultFormatter: NumberFormatter | CurrencyFormatter;
   xAxisFormatter: (value: number | string, index: number) => string;
 }) {
@@ -102,7 +104,7 @@ function formatTooltip({
       defaultFormatter(series.data.originalValue),
     );
   }
-  result += createRow(TOTAL_MARK, defaultFormatter(series.data.totalSum));
+  result += createRow(totalLabel, defaultFormatter(series.data.totalSum));
   return result;
 }
 
@@ -199,7 +201,9 @@ export default function transformProps(
     xAxisLabel,
     yAxisFormat,
     showValue,
+    totalLabel: rawTotalLabel,
   } = formData;
+  const totalLabel = rawTotalLabel?.trim() || TOTAL_MARK;
   const defaultFormatter = currencyFormat?.symbol
     ? new CurrencyFormatter({ d3Format: yAxisFormat, currency: currencyFormat })
     : getNumberFormatter(yAxisFormat);
@@ -337,7 +341,7 @@ export default function transformProps(
 
   const xAxisFormatter = (value: number | string, index: number) => {
     if (value === TOTAL_MARK) {
-      return TOTAL_MARK;
+      return totalLabel;
     }
     if (coltypeMapping[xAxisColumns[index]] === GenericDataType.Temporal) {
       if (typeof value === 'string') {
@@ -466,6 +470,7 @@ export default function transformProps(
           theme,
           params,
           breakdownName,
+          totalLabel,
           defaultFormatter,
           xAxisFormatter,
         }),

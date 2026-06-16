@@ -50,6 +50,7 @@ export type EchartsWaterfallFormData = QueryFormData &
     increaseColor: RgbaColor;
     decreaseColor: RgbaColor;
     totalColor: RgbaColor;
+    totalLabel?: string;
     metric: QueryFormMetric;
     xAxis: QueryFormColumn;
     xAxisLabel: string;

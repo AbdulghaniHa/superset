@@ -49,6 +49,18 @@ const config: ControlPanelConfig = {
         [showValueControl],
         [
           {
+            name: 'total_label',
+            config: {
+              type: 'TextControl',
+              label: t('Total label'),
+              renderTrigger: true,
+              default: t('Total'),
+              description: t('Label for the final total bar'),
+            },
+          },
+        ],
+        [
+          {
             name: 'show_legend',
             config: {
               type: 'CheckboxControl',
