@@ -119,7 +119,9 @@ export const hydrateDashboard =
       chartQueries[key] = {
         ...chart,
         id: key,
+        chartStatus: null,
         form_data: applyDefaultFormData(formData),
+        triggerQuery: false,
       };
 
       slices[key] = {

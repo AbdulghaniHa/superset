@@ -17,17 +17,55 @@
  * under the License.
  */
 import { CHART_TYPE } from './componentTypes';
+import { DASHBOARD_ROOT_ID } from './constants';
 
 export default function getChartIdsFromLayout(layout) {
-  return Object.values(layout).reduce((chartIds, currentComponent) => {
+  const chartIds = [];
+
+  function visit(componentId) {
+    const component = layout[componentId];
+
+    if (!component) {
+      return;
+    }
+
+    if (
+      component.type === CHART_TYPE &&
+      component.meta &&
+      component.meta.chartId
+    ) {
+      chartIds.push(component.meta.chartId);
+      return;
+    }
+
+    (component.children || []).forEach(visit);
+  }
+
+  if (layout[DASHBOARD_ROOT_ID]) {
+    visit(DASHBOARD_ROOT_ID);
+    Object.values(layout).forEach(component => {
+      if (
+        component &&
+        component.type === CHART_TYPE &&
+        component.meta &&
+        component.meta.chartId &&
+        !chartIds.includes(component.meta.chartId)
+      ) {
+        chartIds.push(component.meta.chartId);
+      }
+    });
+    return chartIds;
+  }
+
+  return Object.values(layout).reduce((ids, currentComponent) => {
     if (
       currentComponent &&
       currentComponent.type === CHART_TYPE &&
       currentComponent.meta &&
       currentComponent.meta.chartId
     ) {
-      chartIds.push(currentComponent.meta.chartId);
+      ids.push(currentComponent.meta.chartId);
     }
-    return chartIds;
+    return ids;
   }, []);
 }

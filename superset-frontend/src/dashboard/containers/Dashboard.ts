@@ -45,6 +45,7 @@ function mapStateToProps(state: RootState) {
     dashboardLayout,
     impressionId,
     nativeFilters,
+    charts,
   } = state;
 
   return {
@@ -53,6 +54,7 @@ function mapStateToProps(state: RootState) {
     dashboardInfo,
     dashboardState,
     datasources,
+    charts,
     // filters prop: a map structure for all the active filter's values and scope in this dashboard,
     // for each filter field. map key is [chartId_column]
     // When dashboard is first loaded into browser,

@@ -22,6 +22,10 @@ import sinon from 'sinon';
 
 import Dashboard from 'src/dashboard/components/Dashboard';
 import { CHART_TYPE } from 'src/dashboard/util/componentTypes';
+import {
+  DASHBOARD_GRID_ID,
+  DASHBOARD_ROOT_ID,
+} from 'src/dashboard/util/constants';
 import newComponentFactory from 'src/dashboard/util/newComponentFactory';
 
 // mock data
@@ -46,6 +50,7 @@ describe('Dashboard', () => {
       removeSliceFromDashboard() {},
       triggerQuery() {},
       logEvent() {},
+      clearDataMaskState() {},
     },
     dashboardState,
     dashboardInfo,
@@ -244,6 +249,99 @@ describe('Dashboard', () => {
       });
       expect(refreshSpy.callCount).toBe(1);
       expect(refreshSpy.getCall(0).args[0]).toEqual([]);
+    });
+  });
+
+  describe('lazy chart loading', () => {
+    const getLazyLayout = chartIds => ({
+      [DASHBOARD_ROOT_ID]: {
+        id: DASHBOARD_ROOT_ID,
+        type: 'ROOT',
+        children: [DASHBOARD_GRID_ID],
+      },
+      [DASHBOARD_GRID_ID]: {
+        id: DASHBOARD_GRID_ID,
+        type: 'GRID',
+        children: ['ROW_ID'],
+      },
+      ROW_ID: {
+        id: 'ROW_ID',
+        type: 'ROW',
+        children: chartIds.map(id => `CHART-${id}`),
+      },
+      ...chartIds.reduce(
+        (layout, id) => ({
+          ...layout,
+          [`CHART-${id}`]: {
+            id: `CHART-${id}`,
+            type: CHART_TYPE,
+            meta: { chartId: id },
+          },
+        }),
+        {},
+      ),
+    });
+
+    const getLazyCharts = (chartIds, chartStatus = null) =>
+      chartIds.reduce(
+        (charts, id) => ({
+          ...charts,
+          [id]: { id, chartStatus, triggerQuery: false },
+        }),
+        {},
+      );
+
+    it('should only start the first chart batch in layout order', () => {
+      const chartIds = [1, 2, 3, 4, 5, 6, 7];
+      const triggerQuery = sinon.spy();
+
+      setup({
+        actions: {
+          ...props.actions,
+          triggerQuery,
+        },
+        layout: getLazyLayout(chartIds),
+        charts: getLazyCharts(chartIds),
+      });
+
+      expect(triggerQuery.callCount).toBe(5);
+      expect(triggerQuery.getCalls().map(call => call.args)).toEqual([
+        [true, 1],
+        [true, 2],
+        [true, 3],
+        [true, 4],
+        [true, 5],
+      ]);
+    });
+
+    it('should continue loading lower charts when earlier charts finish', () => {
+      const chartIds = [1, 2, 3, 4, 5, 6, 7];
+      const triggerQuery = sinon.spy();
+      const wrapper = setup({
+        actions: {
+          ...props.actions,
+          triggerQuery,
+        },
+        layout: getLazyLayout(chartIds),
+        charts: getLazyCharts(chartIds),
+      });
+
+      wrapper.setProps({
+        charts: {
+          ...getLazyCharts([1, 2, 3, 4, 5], 'rendered'),
+          ...getLazyCharts([6, 7], null),
+        },
+      });
+
+      expect(triggerQuery.getCalls().map(call => call.args)).toEqual([
+        [true, 1],
+        [true, 2],
+        [true, 3],
+        [true, 4],
+        [true, 5],
+        [true, 6],
+        [true, 7],
+      ]);
     });
   });
 });

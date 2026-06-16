@@ -18,6 +18,10 @@
  */
 import getChartIdsFromLayout from 'src/dashboard/util/getChartIdsFromLayout';
 import { ROW_TYPE, CHART_TYPE } from 'src/dashboard/util/componentTypes';
+import {
+  DASHBOARD_GRID_ID,
+  DASHBOARD_ROOT_ID,
+} from 'src/dashboard/util/constants';
 
 describe('getChartIdsFromLayout', () => {
   const mockLayout = {
@@ -49,5 +53,42 @@ describe('getChartIdsFromLayout', () => {
     const result = getChartIdsFromLayout(mockLayout);
     expect(result).toHaveLength(2);
     expect(result.includes('C')).toBe(false);
+  });
+
+  it('should return chart ids in dashboard tree order', () => {
+    const result = getChartIdsFromLayout({
+      [DASHBOARD_ROOT_ID]: {
+        id: DASHBOARD_ROOT_ID,
+        type: 'ROOT',
+        children: [DASHBOARD_GRID_ID],
+      },
+      [DASHBOARD_GRID_ID]: {
+        id: DASHBOARD_GRID_ID,
+        type: 'GRID',
+        children: ['ROW_2', 'ROW_1'],
+      },
+      ROW_1: {
+        id: 'ROW_1',
+        type: ROW_TYPE,
+        children: ['CHART_A'],
+      },
+      ROW_2: {
+        id: 'ROW_2',
+        type: ROW_TYPE,
+        children: ['CHART_B'],
+      },
+      CHART_A: {
+        id: 'CHART_A',
+        type: CHART_TYPE,
+        meta: { chartId: 'A' },
+      },
+      CHART_B: {
+        id: 'CHART_B',
+        type: CHART_TYPE,
+        meta: { chartId: 'B' },
+      },
+    });
+
+    expect(result).toEqual(['B', 'A']);
   });
 });

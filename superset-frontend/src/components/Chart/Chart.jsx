@@ -244,6 +244,9 @@ class Chart extends React.PureComponent {
     } = this.props;
 
     const isLoading = chartStatus === 'loading';
+    const hasQueryResponse = ensureIsArray(queriesResponse).length > 0;
+    const renderChartStatus =
+      isLoading && hasQueryResponse ? 'rendered' : chartStatus;
     this.renderContainerStartTime = Logger.getTimestamp();
     if (chartStatus === 'failed') {
       return queriesResponse.map(item => this.renderErrorMessage(item));
@@ -303,6 +306,7 @@ class Chart extends React.PureComponent {
             isCurrentUserBot() ? (
               <ChartRenderer
                 {...this.props}
+                chartStatus={renderChartStatus}
                 source={this.props.dashboardId ? 'dashboard' : 'explore'}
                 data-test={this.props.vizType}
               />
@@ -310,7 +314,7 @@ class Chart extends React.PureComponent {
               <Loading />
             )}
           </div>
-          {isLoading && <Loading />}
+          {isLoading && !hasQueryResponse && <Loading />}
         </Styles>
       </ErrorBoundary>
     );
