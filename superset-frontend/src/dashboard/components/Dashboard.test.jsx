@@ -291,7 +291,7 @@ describe('Dashboard', () => {
         {},
       );
 
-    it('should only start the first chart batch in layout order', () => {
+    it('should only request the first chart in layout order on mount', () => {
       const chartIds = [1, 2, 3, 4, 5, 6, 7];
       const triggerQuery = sinon.spy();
 
@@ -304,44 +304,8 @@ describe('Dashboard', () => {
         charts: getLazyCharts(chartIds),
       });
 
-      expect(triggerQuery.callCount).toBe(5);
-      expect(triggerQuery.getCalls().map(call => call.args)).toEqual([
-        [true, 1],
-        [true, 2],
-        [true, 3],
-        [true, 4],
-        [true, 5],
-      ]);
-    });
-
-    it('should continue loading lower charts when earlier charts finish', () => {
-      const chartIds = [1, 2, 3, 4, 5, 6, 7];
-      const triggerQuery = sinon.spy();
-      const wrapper = setup({
-        actions: {
-          ...props.actions,
-          triggerQuery,
-        },
-        layout: getLazyLayout(chartIds),
-        charts: getLazyCharts(chartIds),
-      });
-
-      wrapper.setProps({
-        charts: {
-          ...getLazyCharts([1, 2, 3, 4, 5], 'rendered'),
-          ...getLazyCharts([6, 7], null),
-        },
-      });
-
-      expect(triggerQuery.getCalls().map(call => call.args)).toEqual([
-        [true, 1],
-        [true, 2],
-        [true, 3],
-        [true, 4],
-        [true, 5],
-        [true, 6],
-        [true, 7],
-      ]);
+      expect(triggerQuery.callCount).toBe(1);
+      expect(triggerQuery.getCall(0).args).toEqual([true, 1]);
     });
   });
 });

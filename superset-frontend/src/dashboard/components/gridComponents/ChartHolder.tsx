@@ -16,14 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { ResizeCallback, ResizeStartCallback } from 're-resizable';
 import cx from 'classnames';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { css } from '@superset-ui/core';
 import { LayoutItem, RootState } from 'src/dashboard/types';
 import AnchorLink from 'src/dashboard/components/AnchorLink';
 import Chart from 'src/dashboard/containers/Chart';
+import { triggerQuery } from 'src/components/Chart/chartAction';
 import DeleteComponentButton from 'src/dashboard/components/DeleteComponentButton';
 import { Draggable } from 'src/dashboard/components/dnd/DragDroppable';
 import HoverMenu from 'src/dashboard/components/menu/HoverMenu';
@@ -103,6 +104,20 @@ const ChartHolder: React.FC<ChartHolderProps> = ({
 }) => {
   const { chartId } = component.meta;
   const isFullSize = fullSizeChartId === chartId;
+  const dispatch = useDispatch();
+  const hasRequested = useRef(false);
+
+  const chartStatus = useSelector(
+    (state: RootState) => state.charts[chartId]?.chartStatus,
+  );
+
+  useEffect(() => {
+    if (isInView !== false && !hasRequested.current && chartStatus == null) {
+      hasRequested.current = true;
+      console.log('[lazy-load] chart entered viewport, requesting', chartId);
+      dispatch(triggerQuery(true, chartId));
+    }
+  }, [isInView, chartStatus, chartId, dispatch]);
 
   const focusHighlightStyles = useFilterFocusHighlightStyles(chartId);
   const dashboardState = useSelector(

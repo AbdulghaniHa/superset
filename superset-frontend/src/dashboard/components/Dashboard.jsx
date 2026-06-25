@@ -28,7 +28,6 @@ import getLayoutComponentFromChartId from '../util/getLayoutComponentFromChartId
 
 import {
   slicePropShape,
-  chartPropShape,
   dashboardInfoPropShape,
   dashboardStatePropShape,
 } from '../util/propShapes';
@@ -42,8 +41,6 @@ import { areObjectsEqual } from '../../reduxUtils';
 import getLocationHash from '../util/getLocationHash';
 import isDashboardEmpty from '../util/isDashboardEmpty';
 import { getAffectedOwnDataCharts } from '../util/charts/getOwnDataCharts';
-
-const MAX_CONCURRENT_CHART_QUERIES = 5;
 
 const propTypes = {
   actions: PropTypes.shape({
@@ -59,7 +56,6 @@ const propTypes = {
   activeFilters: PropTypes.object.isRequired,
   chartConfiguration: PropTypes.object,
   datasources: PropTypes.object.isRequired,
-  charts: PropTypes.objectOf(chartPropShape).isRequired,
   ownDataCharts: PropTypes.object.isRequired,
   layout: PropTypes.object.isRequired,
   impressionId: PropTypes.string.isRequired,
@@ -93,9 +89,6 @@ class Dashboard extends React.PureComponent {
     super(props);
     this.appliedFilters = props.activeFilters ?? {};
     this.appliedOwnDataCharts = props.ownDataCharts ?? {};
-    this.chartLoadQueue = [];
-    this.loadingChartIds = new Set();
-    this.initialChartLoadQueued = false;
     this.onVisibilityChange = this.onVisibilityChange.bind(this);
   }
 
@@ -125,18 +118,15 @@ class Dashboard extends React.PureComponent {
     }
     window.addEventListener('visibilitychange', this.onVisibilityChange);
     this.applyCharts();
-    this.queueInitialChartLoad();
+    const [firstChartId] = getChartIdsFromLayout(this.props.layout);
+    if (firstChartId) {
+      console.log('[lazy-load] requesting first chart immediately', firstChartId);
+      this.props.actions.triggerQuery(true, firstChartId);
+    }
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.dashboardInfo.id !== this.props.dashboardInfo.id) {
-      this.chartLoadQueue = [];
-      this.loadingChartIds = new Set();
-      this.initialChartLoadQueued = false;
-    }
+  componentDidUpdate() {
     this.applyCharts();
-    this.queueInitialChartLoad();
-    this.processChartLoadQueue();
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -199,66 +189,6 @@ class Dashboard extends React.PureComponent {
       Dashboard.onBeforeUnload(true);
     } else {
       Dashboard.onBeforeUnload(false);
-    }
-  }
-
-  queueInitialChartLoad() {
-    if (!this.initialChartLoadQueued) {
-      this.initialChartLoadQueued = true;
-      this.queueChartLoads(getChartIdsFromLayout(this.props.layout));
-    }
-  }
-
-  getOrderedChartIds(ids) {
-    const requestedIds = new Set(ids);
-    const orderedIds = getChartIdsFromLayout(this.props.layout).filter(id =>
-      requestedIds.has(id),
-    );
-    const unorderedIds = ids.filter(id => !orderedIds.includes(id));
-
-    return orderedIds.concat(unorderedIds);
-  }
-
-  queueChartLoads(ids) {
-    const queuedIds = new Set(this.chartLoadQueue);
-
-    this.getOrderedChartIds(ids).forEach(id => {
-      if (!queuedIds.has(id) && !this.loadingChartIds.has(id)) {
-        this.chartLoadQueue.push(id);
-        queuedIds.add(id);
-      }
-    });
-
-    this.processChartLoadQueue();
-  }
-
-  processChartLoadQueue() {
-    const { charts } = this.props;
-
-    this.loadingChartIds.forEach(id => {
-      const chart = charts[id];
-      if (!chart || chart.chartStatus !== 'loading') {
-        this.loadingChartIds.delete(id);
-      }
-    });
-
-    while (
-      this.loadingChartIds.size < MAX_CONCURRENT_CHART_QUERIES &&
-      this.chartLoadQueue.length > 0
-    ) {
-      const id = this.chartLoadQueue.shift();
-      const chart = charts[id];
-
-      if (!chart) {
-        continue;
-      }
-
-      this.loadingChartIds.add(id);
-      if (chart.chartStatus === 'loading' || chart.triggerQuery) {
-        continue;
-      }
-
-      this.props.actions.triggerQuery(true, id);
     }
   }
 
@@ -345,7 +275,7 @@ class Dashboard extends React.PureComponent {
   }
 
   refreshCharts(ids) {
-    this.queueChartLoads(ids);
+    ids.forEach(id => this.props.actions.triggerQuery(true, id));
   }
 
   render() {
