@@ -326,8 +326,9 @@ class TestPostChartDataApi(BaseTestChartDataApi):
         rv = self.post_assert_metric(CHART_DATA_URI, self.query_context_payload, "data")
         assert rv.status_code == 200
         assert rv.mimetype == "text/csv"
-        assert "Exported by" not in rv.data.decode("utf-8")
-        assert "Export date" not in rv.data.decode("utf-8")
+        assert rv.data.startswith(b"\xef\xbb\xbf")
+        assert "Exported by" not in rv.data.decode("utf-8-sig")
+        assert "Export date" not in rv.data.decode("utf-8-sig")
 
     @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_with_excel_result_format(self):
@@ -363,6 +364,8 @@ class TestPostChartDataApi(BaseTestChartDataApi):
         assert rv.mimetype == "application/zip"
         zipfile = ZipFile(BytesIO(rv.data), "r")
         assert zipfile.namelist() == ["query_1.csv", "query_2.csv"]
+        assert zipfile.read("query_1.csv").startswith(b"\xef\xbb\xbf")
+        assert zipfile.read("query_2.csv").startswith(b"\xef\xbb\xbf")
 
     @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_with_multi_query_excel_result_format(self):

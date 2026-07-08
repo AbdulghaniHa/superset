@@ -29,9 +29,11 @@ import simplejson as json
 import yaml
 from flask import (
     abort,
+    current_app,
     flash,
     g,
     get_flashed_messages,
+    has_app_context,
     redirect,
     request,
     Response,
@@ -677,8 +679,23 @@ class CsvResponse(Response):
     Override Response to take into account csv encoding from config.py
     """
 
-    charset = conf["CSV_EXPORT"].get("encoding", "utf-8")
+    charset = "utf-8"
     default_mimetype = "text/csv"
+
+    def __init__(self, response: Any = None, *args: Any, **kwargs: Any) -> None:
+        encoding = (
+            current_app.config["CSV_EXPORT"].get("encoding", "utf-8")
+            if has_app_context()
+            else conf["CSV_EXPORT"].get("encoding", "utf-8")
+        )
+        self.charset = (
+            "utf-8"
+            if encoding.lower().replace("_", "-") == "utf-8-sig"
+            else encoding
+        )
+        if isinstance(response, str):
+            response = response.encode(encoding)
+        super().__init__(response, *args, **kwargs)
 
 
 class XlsxResponse(Response):

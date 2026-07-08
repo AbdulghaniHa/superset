@@ -398,11 +398,24 @@ class TestSqlLabApi(SupersetTestCase):
         db.session.add(query_obj)
         db.session.commit()
 
-        get_df_mock.return_value = pd.DataFrame({"foo": [1, 2, 3]})
+        get_df_mock.return_value = pd.DataFrame(
+            {
+                "foo": [1, 2, 3],
+                "district_name": ["حي الرماية", "حي السعادة", "حي القدس"],
+            }
+        )
 
-        resp = self.get_resp("/api/v1/sqllab/export/test/")
-        data = csv.reader(io.StringIO(resp))
-        expected_data = csv.reader(io.StringIO("foo\n1\n2"))
+        resp = self.client.get("/api/v1/sqllab/export/test/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.data.startswith(b"\xef\xbb\xbf"))
+        data = csv.reader(io.StringIO(resp.data.decode("utf-8-sig")))
+        expected_data = csv.reader(
+            io.StringIO(
+                "foo,district_name\n"
+                "1,حي الرماية\n"
+                "2,حي السعادة\n"
+            )
+        )
 
         self.assertEqual(list(expected_data), list(data))
         db.session.delete(query_obj)
