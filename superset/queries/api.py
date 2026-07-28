@@ -71,6 +71,7 @@ class QueryRestApi(BaseSupersetModelRestApi):
     list_columns = [
         "id",
         "changed_on",
+        "client_id",
         "database.database_name",
         "executed_sql",
         "rows",

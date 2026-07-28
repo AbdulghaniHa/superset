@@ -52,6 +52,7 @@ class QuerySchema(Schema):
     """
 
     changed_on = fields.DateTime()
+    client_id = fields.String()
     database = fields.Nested(DatabaseSchema)
     end_time = fields.Float(attribute="end_time")
     executed_sql = fields.String()

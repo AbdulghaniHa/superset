@@ -86,6 +86,7 @@ export type SavedQueryObject = {
 
 export interface QueryObject {
   id: number;
+  client_id: string;
   changed_on: string;
   database: {
     database_name: string;
@@ -111,6 +112,7 @@ export interface QueryObject {
 
 export enum QueryObjectColumns {
   Id = 'id',
+  ClientId = 'client_id',
   ChangedOn = 'changed_on',
   ChangedBy = 'changed_by',
   Database = 'database',

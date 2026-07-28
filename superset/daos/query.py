@@ -18,7 +18,7 @@ import logging
 from datetime import datetime
 from typing import Any, Union
 
-from superset import sql_lab
+from superset import security_manager, sql_lab
 from superset.common.db_query_status import QueryStatus
 from superset.daos.base import BaseDAO
 from superset.exceptions import QueryNotFoundException, SupersetCancelQueryException
@@ -82,8 +82,16 @@ class QueryDAO(BaseDAO[Query]):
         if not query:
             raise QueryNotFoundException(f"Query with client_id {client_id} not found")
 
+        if (
+            query.user_id != get_user_id()
+            and not security_manager.can_access_all_queries()
+        ):
+            # Return the same response as a missing query to avoid leaking query ids.
+            raise QueryNotFoundException(f"Query with client_id {client_id} not found")
+
         if query.status in [
             QueryStatus.FAILED,
+            QueryStatus.STOPPED,
             QueryStatus.SUCCESS,
             QueryStatus.TIMED_OUT,
         ]:
@@ -92,6 +100,16 @@ class QueryDAO(BaseDAO[Query]):
             )
             return
 
+        # Pending/scheduled work has not reached the database yet. Persisting
+        # STOPPED prevents the worker from starting it when it is picked up.
+        if query.status in [QueryStatus.PENDING, QueryStatus.SCHEDULED]:
+            query.status = QueryStatus.STOPPED
+            query.end_time = now_as_float()
+            db.session.commit()
+            return
+
+        # Running/fetching work must be cancelled by the database engine before
+        # Superset publishes the stopped state to SQL Lab clients.
         if not sql_lab.cancel_query(query):
             raise SupersetCancelQueryException("Could not cancel query")
 

@@ -34,6 +34,7 @@ import Filters from 'src/components/ListView/Filters';
 import SyntaxHighlighter from 'react-syntax-highlighter/dist/cjs/light';
 import SubMenu from 'src/features/home/SubMenu';
 import { QueryState } from '@superset-ui/core';
+import Modal from 'src/components/Modal';
 
 // store needed for withToasts
 const mockStore = configureStore([thunk]);
@@ -43,6 +44,7 @@ const queriesEndpoint = 'glob:*/api/v1/query/?*';
 
 const mockQueries: QueryObject[] = [...new Array(3)].map((_, i) => ({
   changed_on: new Date().toISOString(),
+  client_id: `client-${i}`,
   id: i,
   slice_name: `cool chart ${i}`,
   database: {
@@ -55,7 +57,7 @@ const mockQueries: QueryObject[] = [...new Array(3)].map((_, i) => ({
     { schema: 'foo', table: 'table' },
     { schema: 'bar', table: 'table_2' },
   ],
-  status: QueryState.Success,
+  status: i === 0 ? QueryState.Running : QueryState.Success,
   tab_name: 'Main Tab',
   user: {
     first_name: 'cool',
@@ -87,6 +89,7 @@ fetchMock.get('glob:*/api/v1/query/disting/status*', {
   result: [],
   count: 0,
 });
+fetchMock.post('glob:*/api/v1/query/stop', { result: 'OK' });
 
 describe('QueryList', () => {
   const mockedProps = {};
@@ -101,6 +104,10 @@ describe('QueryList', () => {
 
   beforeAll(async () => {
     await waitForComponentToPaint(wrapper);
+  });
+
+  afterAll(() => {
+    wrapper.unmount();
   });
 
   it('renders', () => {
@@ -170,5 +177,23 @@ describe('QueryList', () => {
         expect.objectContaining({ label: 'Datasets' }),
       ]),
     );
+  });
+
+  it('stops an active query after confirmation', async () => {
+    const confirm = jest
+      .spyOn(Modal, 'confirm')
+      .mockImplementation(({ onOk }: any) => {
+        onOk();
+        return undefined as any;
+      });
+
+    act(() => {
+      wrapper.find('[data-test="stop-query-0"]').first().simulate('click');
+    });
+    await waitForComponentToPaint(wrapper);
+
+    const stopCall = fetchMock.lastCall('glob:*/api/v1/query/stop');
+    expect(stopCall?.[1]?.body).toBe(JSON.stringify({ client_id: 'client-0' }));
+    confirm.mockRestore();
   });
 });

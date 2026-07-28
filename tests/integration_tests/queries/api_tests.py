@@ -488,6 +488,7 @@ class TestQueryApi(SupersetTestCase):
         query_mock.client_id = "foo"
         query_mock.status = QueryStatus.RUNNING
         self.login(username="admin")
+        query_mock.user_id = self.get_user("admin").id
         mock_superset_db_session.query().filter_by().one_or_none().return_value = (
             query_mock
         )
@@ -501,3 +502,58 @@ class TestQueryApi(SupersetTestCase):
         assert rv.status_code == 200
         data = json.loads(rv.data.decode("utf-8"))
         assert data["result"] == "OK"
+
+    @mock.patch(
+        "superset.security.manager.SupersetSecurityManager.can_access_all_queries"
+    )
+    @mock.patch("superset.sql_lab.cancel_query")
+    @mock.patch("superset.views.core.db.session")
+    def test_stop_query_rejects_other_users_query(
+        self,
+        mock_superset_db_session,
+        mock_sql_lab_cancel_query,
+        mock_can_access_all_queries,
+    ):
+        query_mock = mock.Mock()
+        query_mock.client_id = "another-users-query"
+        query_mock.user_id = -1
+        query_mock.status = QueryStatus.RUNNING
+        mock_superset_db_session.query().filter_by().one_or_none().return_value = (
+            query_mock
+        )
+        mock_can_access_all_queries.return_value = False
+        self.login(username="admin")
+
+        rv = self.client.post(
+            "/api/v1/query/stop",
+            data=json.dumps({"client_id": query_mock.client_id}),
+            content_type="application/json",
+        )
+
+        assert rv.status_code == 404
+        mock_sql_lab_cancel_query.assert_not_called()
+
+    @mock.patch("superset.sql_lab.cancel_query")
+    @mock.patch("superset.views.core.db.session")
+    def test_stop_pending_query_before_database_execution(
+        self, mock_superset_db_session, mock_sql_lab_cancel_query
+    ):
+        query_mock = mock.Mock()
+        query_mock.client_id = "pending-query"
+        query_mock.status = QueryStatus.PENDING
+        self.login(username="admin")
+        query_mock.user_id = self.get_user("admin").id
+        mock_superset_db_session.query().filter_by().one_or_none().return_value = (
+            query_mock
+        )
+
+        rv = self.client.post(
+            "/api/v1/query/stop",
+            data=json.dumps({"client_id": query_mock.client_id}),
+            content_type="application/json",
+        )
+
+        assert rv.status_code == 200
+        assert query_mock.status == QueryStatus.STOPPED
+        mock_superset_db_session.commit.assert_called_once()
+        mock_sql_lab_cancel_query.assert_not_called()

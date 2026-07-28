@@ -401,6 +401,10 @@ def execute_sql_statements(
 
     query = get_query(query_id)
     payload: dict[str, Any] = {"query_id": query_id}
+    if query.status == QueryStatus.STOPPED:
+        payload.update({"status": QueryStatus.STOPPED})
+        return payload
+
     database = query.database
     db_engine_spec = database.db_engine_spec
     db_engine_spec.patch()

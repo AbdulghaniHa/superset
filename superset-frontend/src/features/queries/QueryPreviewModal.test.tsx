@@ -35,6 +35,7 @@ const store = mockStore({});
 
 const mockQueries: QueryObject[] = [...new Array(3)].map((_, i) => ({
   changed_on: new Date().toISOString(),
+  client_id: `client-${i}`,
   id: i,
   slice_name: `cool chart ${i}`,
   database: {

@@ -16,7 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useMemo, useState, useCallback, ReactElement } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  ReactElement,
+} from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import {
   QueryState,
@@ -52,11 +59,20 @@ import { QueryObject, QueryObjectColumns } from 'src/views/CRUD/types';
 
 import Icons from 'src/components/Icons';
 import QueryPreviewModal from 'src/features/queries/QueryPreviewModal';
-import { addSuccessToast } from 'src/components/MessageToasts/actions';
 import getOwnerName from 'src/utils/getOwnerName';
+import Button from 'src/components/Button';
+import Modal from 'src/components/Modal';
 
 const PAGE_SIZE = 25;
 const SQL_PREVIEW_MAX_LINES = 4;
+const ACTIVE_QUERY_REFRESH_INTERVAL = 5000;
+const ACTIVE_QUERY_STATES = new Set([
+  QueryState.Started,
+  QueryState.Pending,
+  QueryState.Scheduled,
+  QueryState.Running,
+  QueryState.Fetching,
+]);
 
 const TopAlignedListView = styled(ListView)<ListViewProps<QueryObject>>`
   table .table-cell {
@@ -95,10 +111,11 @@ const TimerLabel = styled(Label)`
   font-family: ${({ theme }) => theme.typography.families.monospace};
 `;
 
-function QueryList({ addDangerToast }: QueryListProps) {
+function QueryList({ addDangerToast, addSuccessToast }: QueryListProps) {
   const {
     state: { loading, resourceCount: queryCount, resourceCollection: queries },
     fetchData,
+    refreshData,
   } = useListViewResource<QueryObject>(
     'query',
     t('Query history'),
@@ -108,6 +125,27 @@ function QueryList({ addDangerToast }: QueryListProps) {
 
   const [queryCurrentlyPreviewing, setQueryCurrentlyPreviewing] =
     useState<QueryObject>();
+  const [stoppingQueryId, setStoppingQueryId] = useState<number>();
+
+  const refreshDataRef = useRef(refreshData);
+  const hasActiveQueriesRef = useRef(false);
+  refreshDataRef.current = refreshData;
+  hasActiveQueriesRef.current = queries.some(({ status }) =>
+    ACTIVE_QUERY_STATES.has(status),
+  );
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      if (
+        document.visibilityState === 'visible' &&
+        hasActiveQueriesRef.current
+      ) {
+        refreshDataRef.current();
+      }
+    }, ACTIVE_QUERY_REFRESH_INTERVAL);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   const theme = useTheme();
   const history = useHistory();
@@ -128,6 +166,38 @@ function QueryList({ addDangerToast }: QueryListProps) {
       );
     },
     [addDangerToast],
+  );
+
+  const handleStopQuery = useCallback(
+    (query: QueryObject) => {
+      Modal.confirm({
+        title: t('Stop this query?'),
+        content: t(
+          'Superset will ask the database to cancel this query. Cancellation may not be supported by every database.',
+        ),
+        okText: t('Stop query'),
+        cancelText: t('Keep running'),
+        onOk: () => {
+          setStoppingQueryId(query.id);
+          return SupersetClient.post({
+            endpoint: '/api/v1/query/stop',
+            body: JSON.stringify({ client_id: query.client_id }),
+            headers: { 'Content-Type': 'application/json' },
+          })
+            .then(() => {
+              addSuccessToast(t('Query was stopped.'));
+              return refreshDataRef.current();
+            })
+            .catch(
+              createErrorHandler(errMsg =>
+                addDangerToast(t('Failed to stop query: %s', errMsg)),
+              ),
+            )
+            .finally(() => setStoppingQueryId(undefined));
+        },
+      });
+    },
+    [addDangerToast, addSuccessToast],
   );
 
   const menuData: SubMenuProps = {
@@ -162,21 +232,20 @@ function QueryList({ addDangerToast }: QueryListProps) {
               <Icons.Check iconColor={theme.colors.success.base} />
             );
             statusConfig.label = t('Success');
-          } else if (
-            status === QueryState.Failed ||
-            status === QueryState.Stopped
-          ) {
+          } else if (status === QueryState.Failed) {
             statusConfig.name = (
-              <Icons.XSmall
-                iconColor={
-                  status === QueryState.Failed
-                    ? theme.colors.error.base
-                    : theme.colors.grayscale.base
-                }
-              />
+              <Icons.XSmall iconColor={theme.colors.error.base} />
             );
             statusConfig.label = t('Failed');
-          } else if (status === QueryState.Running) {
+          } else if (status === QueryState.Stopped) {
+            statusConfig.name = (
+              <Icons.XSmall iconColor={theme.colors.grayscale.base} />
+            );
+            statusConfig.label = t('Stopped');
+          } else if (
+            status === QueryState.Running ||
+            status === QueryState.Started
+          ) {
             statusConfig.name = (
               <Icons.Running iconColor={theme.colors.primary.base} />
             );
@@ -186,14 +255,21 @@ function QueryList({ addDangerToast }: QueryListProps) {
               <Icons.Offline iconColor={theme.colors.grayscale.light1} />
             );
             statusConfig.label = t('Offline');
-          } else if (
-            status === QueryState.Scheduled ||
-            status === QueryState.Pending
-          ) {
+          } else if (status === QueryState.Fetching) {
+            statusConfig.name = (
+              <Icons.Queued iconColor={theme.colors.primary.base} />
+            );
+            statusConfig.label = t('Fetching');
+          } else if (status === QueryState.Scheduled) {
             statusConfig.name = (
               <Icons.Queued iconColor={theme.colors.grayscale.base} />
             );
             statusConfig.label = t('Scheduled');
+          } else if (status === QueryState.Pending) {
+            statusConfig.name = (
+              <Icons.Queued iconColor={theme.colors.grayscale.base} />
+            );
+            statusConfig.label = t('Pending');
           }
           return (
             <Tooltip title={statusConfig.label} placement="bottom">
@@ -237,8 +313,11 @@ function QueryList({ addDangerToast }: QueryListProps) {
           },
         }: any) => {
           const timerType = status === QueryState.Failed ? 'danger' : status;
-          const timerTime = end_time
-            ? moment(moment.utc(end_time - start_time)).format(TIME_WITH_MS)
+          const durationEnd = ACTIVE_QUERY_STATES.has(status)
+            ? Date.now()
+            : end_time;
+          const timerTime = durationEnd
+            ? moment(moment.utc(durationEnd - start_time)).format(TIME_WITH_MS)
             : '00:00:00.000';
           return (
             <TimerLabel type={timerType} role="timer">
@@ -343,20 +422,32 @@ function QueryList({ addDangerToast }: QueryListProps) {
         Header: t('Actions'),
         id: 'actions',
         disableSortBy: true,
-        Cell: ({
-          row: {
-            original: { id },
-          },
-        }: any) => (
-          <Tooltip title={t('Open query in SQL Lab')} placement="bottom">
-            <Link to={`/sqllab?queryId=${id}`}>
-              <Icons.Full iconColor={theme.colors.grayscale.base} />
-            </Link>
-          </Tooltip>
+        Cell: ({ row: { original: query } }: any) => (
+          <div>
+            <Tooltip title={t('Open query in SQL Lab')} placement="bottom">
+              <Link to={`/sqllab?queryId=${query.id}`}>
+                <Icons.Full iconColor={theme.colors.grayscale.base} />
+              </Link>
+            </Tooltip>
+            {ACTIVE_QUERY_STATES.has(query.status) && (
+              <Button
+                buttonStyle="link"
+                buttonSize="small"
+                data-test={`stop-query-${query.id}`}
+                disabled={stoppingQueryId === query.id}
+                loading={stoppingQueryId === query.id}
+                onClick={() => handleStopQuery(query)}
+                tooltip={t('Stop query')}
+                aria-label={t('Stop query')}
+              >
+                <Icons.StopOutlined iconColor={theme.colors.error.base} />
+              </Button>
+            )}
+          </div>
         ),
       },
     ],
-    [],
+    [handleStopQuery, stoppingQueryId, theme],
   );
 
   const filters: Filters = useMemo(
@@ -457,7 +548,7 @@ function QueryList({ addDangerToast }: QueryListProps) {
         loading={loading}
         pageSize={PAGE_SIZE}
         highlightRowId={queryCurrentlyPreviewing?.id}
-        refreshData={() => {}}
+        refreshData={refreshData}
         addDangerToast={addDangerToast}
         addSuccessToast={addSuccessToast}
       />

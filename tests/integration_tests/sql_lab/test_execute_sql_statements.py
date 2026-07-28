@@ -14,12 +14,32 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-from superset import app
+from superset import app, db
 from superset.common.db_query_status import QueryStatus
 from superset.models.core import Database
 from superset.models.sql_lab import Query
 from superset.sql_lab import execute_sql_statements
 from superset.utils.dates import now_as_float
+
+
+def test_stopped_query_is_not_started_by_worker(example_query: Query):
+    example_query.status = QueryStatus.STOPPED
+    db.session.commit()
+
+    result = execute_sql_statements(
+        example_query.id,
+        "select 1 as foo;",
+        store_results=False,
+        return_results=True,
+        start_time=now_as_float(),
+        expand_data=True,
+        log_params={},
+    )
+
+    assert result == {
+        "query_id": example_query.id,
+        "status": QueryStatus.STOPPED,
+    }
 
 
 def test_non_async_execute(non_async_example_db: Database, example_query: Query):
