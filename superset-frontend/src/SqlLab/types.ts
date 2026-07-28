@@ -108,6 +108,7 @@ export type SqlLabRootState = {
     queryEditors: QueryEditor[];
     tabHistory: string[]; // default is activeTab ? [activeTab.id.toString()] : []
     tables: Table[];
+    initializedAt?: number;
     queriesLastUpdate: number;
     errorMessage: string | null;
     unsavedQueryEditor: UnsavedQueryEditor;

@@ -33,11 +33,11 @@ import { LocationProvider } from './LocationContext';
 
 export default function SqlLab() {
   const lastInitializedAt = useSelector<SqlLabRootState, number>(
-    state => state.sqlLab.queriesLastUpdate || 0,
+    state => state.sqlLab.initializedAt || 0,
   );
   const { data, isLoading, isError, error, fulfilledTimeStamp } =
     useSqlLabInitialState();
-  const shouldInitialize = lastInitializedAt <= (fulfilledTimeStamp || 0);
+  const shouldInitialize = lastInitializedAt < (fulfilledTimeStamp || 0);
   const dispatch = useDispatch();
 
   const initBootstrapData = useEffectEvent(

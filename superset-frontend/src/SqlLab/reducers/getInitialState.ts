@@ -236,37 +236,59 @@ export default function getInitialState({
     // continue regardless of error
   }
 
+  // Build query restoration metadata in one pass. The SQL Lab bootstrap can
+  // contain thousands of historical queries, so scanning and sorting the full
+  // collection once per editor tab can block the browser during page load.
+  const latestQueryByEditor = new Map<
+    string,
+    { queryId: string; updatedAt: number }
+  >();
+  let oldestInFlightUpdate: number | undefined;
+
+  Object.values(queries).forEach(query => {
+    if (!query || typeof query !== 'object') {
+      return;
+    }
+
+    const updatedAt = getQueryUpdatedAt(query) ?? 0;
+    if (query.sqlEditorId !== null && query.sqlEditorId !== undefined) {
+      const editorId = String(query.sqlEditorId);
+      const latestQuery = latestQueryByEditor.get(editorId);
+      if (!latestQuery || updatedAt > latestQuery.updatedAt) {
+        latestQueryByEditor.set(editorId, {
+          queryId: query.id,
+          updatedAt,
+        });
+      }
+    }
+
+    if (runningQueryStateList.includes(query.state) && updatedAt) {
+      oldestInFlightUpdate =
+        oldestInFlightUpdate === undefined
+          ? updatedAt
+          : Math.min(oldestInFlightUpdate, updatedAt);
+    }
+  });
+
   // Only the active backend-persisted tab is fully hydrated during bootstrap.
   // Associate unloaded tabs with their most recent query so their status icon
   // survives a refresh and remains visible until the tab is opened.
   Object.values(queryEditors).forEach(queryEditor => {
-    if (queryEditor.loaded || queryEditor.latestQueryId) {
-      return;
-    }
-    const latestQuery = Object.values(queries)
-      .filter(query => String(query.sqlEditorId) === queryEditor.id)
-      .sort(
-        (left, right) =>
-          (getQueryUpdatedAt(right) ?? 0) - (getQueryUpdatedAt(left) ?? 0),
-      )[0];
-    if (latestQuery) {
-      queryEditors[queryEditor.id] = {
-        ...queryEditor,
-        latestQueryId: latestQuery.id,
-      };
+    if (!queryEditor.loaded && !queryEditor.latestQueryId) {
+      const latestQuery = latestQueryByEditor.get(queryEditor.id);
+      if (latestQuery) {
+        queryEditors[queryEditor.id] = {
+          ...queryEditor,
+          latestQueryId: latestQuery.queryId,
+        };
+      }
     }
   });
 
   // A page reload can happen after a query's last server update. Start polling
   // from the oldest known in-flight update instead of "now", otherwise a
   // completion that happened while the page was refreshing can be missed.
-  const inFlightQueryUpdates = Object.values(queries)
-    .filter(query => runningQueryStateList.includes(query.state))
-    .map(getQueryUpdatedAt)
-    .filter((timestamp): timestamp is number => timestamp !== undefined);
-  const queriesLastUpdate = inFlightQueryUpdates.length
-    ? Math.min(...inFlightQueryUpdates)
-    : Date.now();
+  const queriesLastUpdate = oldestInFlightUpdate ?? Date.now();
 
   return {
     sqlLab: {
@@ -291,6 +313,7 @@ export default function getInitialState({
       queryEditors: Object.values(queryEditors),
       tabHistory: dedupeTabHistory(tabHistory),
       tables: Object.values(tables),
+      initializedAt: Date.now(),
       queriesLastUpdate,
       editorTabLastUpdatedAt,
       queryCostEstimates: {},

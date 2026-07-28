@@ -30,6 +30,7 @@ import reducers from 'spec/helpers/reducerIndex';
 import { api } from 'src/hooks/apiResources/queryApi';
 import { DEFAULT_COMMON_BOOTSTRAP_DATA } from 'src/constants';
 import getInitialState from 'src/SqlLab/reducers/getInitialState';
+import { runningQuery } from 'src/SqlLab/fixtures';
 
 import SqlLab from '.';
 
@@ -38,7 +39,12 @@ const fakeApiResult = {
     common: DEFAULT_COMMON_BOOTSTRAP_DATA,
     tab_state_ids: [],
     databases: [],
-    queries: {},
+    queries: {
+      [runningQuery.id]: {
+        ...runningQuery,
+        changed_on: new Date(runningQuery.startDttm).toISOString(),
+      },
+    },
     user: {
       userId: 1,
       username: 'some name',
@@ -92,7 +98,11 @@ test('fetches initial data and renders', async () => {
   expect(storeWithSqlLab.getState()).toEqual(
     expect.objectContaining({
       sqlLab: expect.objectContaining(
-        omit(sqlLab, ['queriesLastUpdate', 'editorTabLastUpdatedAt']),
+        omit(sqlLab, [
+          'initializedAt',
+          'queriesLastUpdate',
+          'editorTabLastUpdatedAt',
+        ]),
       ),
     }),
   );
