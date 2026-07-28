@@ -56,6 +56,7 @@ export type InitialState = {
   queries: Record<
     string,
     Omit<QueryResponse, 'startDttm' | 'endDttm'> & {
+      changed_on?: string;
       startDttm: number | string;
       endDttm: number | string;
       inLocalStorage?: boolean;

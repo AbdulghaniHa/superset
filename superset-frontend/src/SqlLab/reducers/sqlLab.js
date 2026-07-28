@@ -704,27 +704,16 @@ export default function sqlLabReducer(state = {}, action) {
     [actions.CLEAR_INACTIVE_QUERIES]() {
       const { queries } = state;
       const cleanedQueries = Object.fromEntries(
-        Object.entries(queries)
-          .filter(([, query]) => {
-            if (
-              ['running', 'pending'].includes(query.state) &&
-              Date.now() - query.startDttm > action.interval &&
-              query.progress === 0
-            ) {
-              return false;
-            }
-            return true;
-          })
-          .map(([id, query]) => [
-            id,
-            {
-              ...query,
-              state:
-                query.resultsKey && query.results?.status
-                  ? query.results.status
-                  : query.state,
-            },
-          ]),
+        Object.entries(queries).map(([id, query]) => [
+          id,
+          {
+            ...query,
+            state:
+              query.resultsKey && query.results?.status
+                ? query.results.status
+                : query.state,
+          },
+        ]),
       );
       return { ...state, queries: cleanedQueries };
     },

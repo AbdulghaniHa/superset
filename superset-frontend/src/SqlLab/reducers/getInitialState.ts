@@ -16,7 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { t } from '@superset-ui/core';
+import {
+  normalizeTimestamp,
+  runningQueryStateList,
+  t,
+} from '@superset-ui/core';
 import type { BootstrapData } from 'src/types/bootstrapTypes';
 import type { InitialState } from 'src/hooks/apiResources/sqlLab';
 import {
@@ -34,6 +38,20 @@ export function dedupeTabHistory(tabHistory: string[]) {
       result.slice(-1)[0] === tabId ? result : result.concat(tabId),
     [],
   );
+}
+
+function getQueryUpdatedAt(query: {
+  changed_on?: string;
+  startDttm?: unknown;
+}) {
+  const changedOn =
+    query.changed_on && Date.parse(normalizeTimestamp(query.changed_on));
+  if (changedOn && !Number.isNaN(changedOn)) {
+    return changedOn;
+  }
+
+  const startDttm = Number(query.startDttm);
+  return Number.isNaN(startDttm) ? undefined : startDttm;
 }
 
 export default function getInitialState({
@@ -218,6 +236,38 @@ export default function getInitialState({
     // continue regardless of error
   }
 
+  // Only the active backend-persisted tab is fully hydrated during bootstrap.
+  // Associate unloaded tabs with their most recent query so their status icon
+  // survives a refresh and remains visible until the tab is opened.
+  Object.values(queryEditors).forEach(queryEditor => {
+    if (queryEditor.loaded || queryEditor.latestQueryId) {
+      return;
+    }
+    const latestQuery = Object.values(queries)
+      .filter(query => String(query.sqlEditorId) === queryEditor.id)
+      .sort(
+        (left, right) =>
+          (getQueryUpdatedAt(right) ?? 0) - (getQueryUpdatedAt(left) ?? 0),
+      )[0];
+    if (latestQuery) {
+      queryEditors[queryEditor.id] = {
+        ...queryEditor,
+        latestQueryId: latestQuery.id,
+      };
+    }
+  });
+
+  // A page reload can happen after a query's last server update. Start polling
+  // from the oldest known in-flight update instead of "now", otherwise a
+  // completion that happened while the page was refreshing can be missed.
+  const inFlightQueryUpdates = Object.values(queries)
+    .filter(query => runningQueryStateList.includes(query.state))
+    .map(getQueryUpdatedAt)
+    .filter((timestamp): timestamp is number => timestamp !== undefined);
+  const queriesLastUpdate = inFlightQueryUpdates.length
+    ? Math.min(...inFlightQueryUpdates)
+    : Date.now();
+
   return {
     sqlLab: {
       activeSouthPaneTab: 'Results',
@@ -241,7 +291,7 @@ export default function getInitialState({
       queryEditors: Object.values(queryEditors),
       tabHistory: dedupeTabHistory(tabHistory),
       tables: Object.values(tables),
-      queriesLastUpdate: Date.now(),
+      queriesLastUpdate,
       editorTabLastUpdatedAt,
       queryCostEstimates: {},
       unsavedQueryEditor,

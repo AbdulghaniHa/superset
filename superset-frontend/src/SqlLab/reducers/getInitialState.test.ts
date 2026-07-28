@@ -68,6 +68,29 @@ describe('getInitialState', () => {
     ).toBeUndefined();
   });
 
+  it('restores the latest query and polling cursor for an unloaded tab', () => {
+    const startDttm = Date.now() - 60_000;
+    const state = getInitialState({
+      ...apiDataWithTabState,
+      tab_state_ids: [
+        { id: 1, label: 'editor1' },
+        { id: 2, label: 'editor2' },
+      ],
+      queries: {
+        restored: {
+          ...runningQuery,
+          id: 'restored',
+          sqlEditorId: '2',
+          startDttm,
+          changed_on: new Date(startDttm).toISOString(),
+        },
+      },
+    });
+
+    expect(state.sqlLab.queryEditors[1].latestQueryId).toBe('restored');
+    expect(state.sqlLab.queriesLastUpdate).toBe(startDttm);
+  });
+
   describe('dedupeTabHistory', () => {
     it('should dedupe the tab history', () => {
       [

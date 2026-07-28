@@ -433,5 +433,21 @@ describe('sqlLabReducer', () => {
       );
       expect(newState.queries.abcd.state).toBe(QueryState.Success);
     });
+    it('keeps an in-flight query when polling returns no updates', () => {
+      const pendingQuery = {
+        ...query,
+        state: QueryState.Pending,
+        progress: 0,
+        startDttm: Date.now() - 10_000,
+      };
+      newState = sqlLabReducer(
+        {
+          ...newState,
+          queries: { abcd: pendingQuery },
+        },
+        actions.clearInactiveQueries(2000),
+      );
+      expect(newState.queries.abcd).toEqual(pendingQuery);
+    });
   });
 });
