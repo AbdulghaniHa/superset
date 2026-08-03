@@ -18,7 +18,13 @@
  */
 import React from 'react';
 import fetchMock from 'fetch-mock';
-import { render, screen, waitFor } from 'spec/helpers/testing-library';
+import {
+  createStore,
+  render,
+  screen,
+  waitFor,
+} from 'spec/helpers/testing-library';
+import reducers from 'spec/helpers/reducerIndex';
 import userEvent from '@testing-library/user-event';
 import SqlEditorLeftBar, {
   SqlEditorLeftBarProps,
@@ -31,6 +37,7 @@ import {
 } from 'src/SqlLab/fixtures';
 import type { RootState } from 'src/views/store';
 import type { Store } from 'redux';
+import { LocalStorageKeys, setItem } from 'src/utils/localStorageHelpers';
 
 const mockedProps = {
   queryEditorId: defaultQueryEditor.id,
@@ -43,6 +50,8 @@ const mockedProps = {
 };
 
 beforeEach(() => {
+  window.history.replaceState({}, '', '/');
+  setItem(LocalStorageKeys.Database, null);
   fetchMock.get('glob:*/api/v1/database/?*', { result: [] });
   fetchMock.get('glob:*/api/v1/database/*/schemas/?*', {
     count: 2,
@@ -74,6 +83,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  window.history.replaceState({}, '', '/');
+  setItem(LocalStorageKeys.Database, null);
   fetchMock.restore();
   jest.clearAllMocks();
 });
@@ -198,6 +209,29 @@ test('When changing database the table list must be updated', async () => {
   expect(updatedDbSelector[0]).toBeInTheDocument();
   const updatedTableSelector = await screen.findAllByText(/new_table/i);
   expect(updatedTableSelector[0]).toBeInTheDocument();
+});
+
+test('redirected database updates the query editor execution state', async () => {
+  const redirectedDatabase = {
+    id: 2,
+    database_name: 'clickhousedb',
+    backend: 'clickhouse',
+  };
+  window.history.replaceState({}, '', '/sqllab?db=true');
+  setItem(LocalStorageKeys.Database, redirectedDatabase);
+  const store = createStore(initialState, reducers);
+
+  await renderAndWait(mockedProps, store);
+
+  await waitFor(() => {
+    expect((store.getState() as RootState).sqlLab.unsavedQueryEditor).toEqual(
+      expect.objectContaining({
+        id: defaultQueryEditor.id,
+        dbId: redirectedDatabase.id,
+        schema: undefined,
+      }),
+    );
+  });
 });
 
 test('ignore schema api when current schema is deprecated', async () => {

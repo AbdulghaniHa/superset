@@ -124,19 +124,27 @@ const SqlEditorLeftBar = ({
   const { schema } = queryEditor;
 
   useEffect(() => {
-    const bool = querystring.parse(window.location.search).db;
+    const shouldUseRedirectedDatabase = querystring.parse(
+      window.location.search,
+    ).db;
     const userSelected = getItem(
       LocalStorageKeys.Database,
       null,
     ) as DatabaseObject | null;
 
-    if (bool && userSelected) {
+    if (shouldUseRedirectedDatabase && userSelected) {
+      // The database passed through the "Query data in SQL Lab" redirect must
+      // update the query editor as well as the selector. Otherwise the UI can
+      // display the redirected database while execution still uses the
+      // editor's previous/default database.
       setUserSelected(userSelected);
+      dispatch(queryEditorSetDb(queryEditor, userSelected.id));
+      dispatch(queryEditorSetSchema(queryEditor, undefined));
       setItem(LocalStorageKeys.Database, null);
     } else if (database) {
       setUserSelected(database);
     }
-  }, [database]);
+  }, [database, dispatch, queryEditor]);
 
   const onEmptyResults = (searchText?: string) => {
     setEmptyResultsWithSearch(!!searchText);
