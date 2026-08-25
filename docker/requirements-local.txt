@@ -1,1 +1,2 @@
-sqlalchemy-bigquery
+sqlalchemy==1.4.36
+sqlalchemy-bigquery==1.6.1

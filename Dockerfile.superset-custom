@@ -5,6 +5,7 @@ USER root
 RUN pip install --no-cache-dir \
     clickhouse-connect \
     clickhouse-sqlalchemy \
-    sqlalchemy-bigquery
+    sqlalchemy==1.4.36 \
+    sqlalchemy-bigquery==1.6.1
 
 USER superset
