@@ -111,7 +111,9 @@ test('skips select all options', async () => {
   expect(
     await screen.findByRole('option', { name: 'table_a' }),
   ).toBeInTheDocument();
-  expect(screen.queryByRole('option', { name: /Select All/i })).toBeFalsy();
+  expect(
+    screen.queryByRole('option', { name: /Select All/i }),
+  ).not.toBeInTheDocument();
 });
 
 test('renders table options without Select All option', async () => {
@@ -147,6 +149,38 @@ test('renders disabled without schema', async () => {
   await waitFor(() => {
     expect(tableSelect).toBeDisabled();
   });
+});
+
+test('updates the schema and tables when the schema prop changes', async () => {
+  fetchMock.get(schemaApiRoute, {
+    result: ['test_schema', 'next_schema'],
+  });
+  fetchMock.get(tablesApiRoute, getTableMockFunction());
+
+  const props = createProps();
+  const { rerender } = render(<TableSelector {...props} />, {
+    useRedux: true,
+    store,
+  });
+  const schemaSelect = screen.getByRole('combobox', {
+    name: 'Select schema or type to search schemas',
+  });
+  const selectedItem = schemaSelect
+    .closest('.ant-select')
+    ?.querySelector('.ant-select-selection-item');
+
+  expect(selectedItem).toHaveTextContent('test_schema');
+
+  rerender(<TableSelector {...props} schema="next_schema" />);
+
+  await waitFor(() => expect(selectedItem).toHaveTextContent('next_schema'));
+  await waitFor(() =>
+    expect(
+      fetchMock
+        .calls(tablesApiRoute)
+        .some(([url]) => url.includes('schema_name=next_schema')),
+    ).toBe(true),
+  );
 });
 
 test('table select retain value if not in SQL Lab mode', async () => {

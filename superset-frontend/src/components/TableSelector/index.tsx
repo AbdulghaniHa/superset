@@ -223,6 +223,11 @@ const TableSelector: FunctionComponent<TableSelectorProps> = ({
   }, [database, tableSelectMode]);
 
   useEffect(() => {
+    // The schema can change externally when SQL Lab activates another query.
+    setCurrentSchema(schema);
+  }, [schema]);
+
+  useEffect(() => {
     if (tableSelectMode === 'single') {
       setTableSelectValue(
         tableOptions.find(option => option.value === tableValue),

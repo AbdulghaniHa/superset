@@ -215,6 +215,20 @@ export default function DatabaseSelector({
     );
   }, [db]);
 
+  useEffect(() => {
+    // SQL Lab reuses this selector when switching query tabs. Keep the local
+    // Select value aligned with the active query editor's schema.
+    setCurrentSchema(current => {
+      if (current?.value === schema) {
+        return current;
+      }
+
+      return schema
+        ? { label: schema, value: schema, title: schema }
+        : undefined;
+    });
+  }, [schema]);
+
   function changeSchema(schema: SchemaOption | undefined) {
     setCurrentSchema(schema);
     if (onSchemaChange && schema?.value !== schemaRef.current) {

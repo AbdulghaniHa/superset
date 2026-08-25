@@ -294,6 +294,29 @@ test('Should schema select display options', async () => {
   ).toBeInTheDocument();
 });
 
+test('Should update the selected schema when the schema prop changes', async () => {
+  const props = createProps();
+  const { rerender } = render(<DatabaseSelector {...props} />, {
+    useRedux: true,
+    store,
+  });
+  const select = screen.getByRole('combobox', {
+    name: 'Select schema or type to search schemas',
+  });
+  const selectedItem = select
+    .closest('.ant-select')
+    ?.querySelector('.ant-select-selection-item');
+
+  expect(selectedItem).toHaveTextContent('public');
+
+  rerender(<DatabaseSelector {...props} schema="information_schema" />);
+
+  await waitFor(() =>
+    expect(selectedItem).toHaveTextContent('information_schema'),
+  );
+  expect(props.onSchemaChange).not.toHaveBeenCalled();
+});
+
 test('Sends the correct db when changing the database', async () => {
   const props = createProps();
   render(<DatabaseSelector {...props} />, { useRedux: true, store });
